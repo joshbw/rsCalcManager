@@ -1,0 +1,104 @@
+name: CI
+
+on:
+  push:
+    branches: [main, initial_porting_branch]
+  pull_request:
+    branches: [main]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Build + test on native platforms
+  # ---------------------------------------------------------------------------
+  test:
+    name: Test (${{ matrix.os }})
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows
+            runner: windows-latest
+            target: x86_64-pc-windows-msvc
+          - os: macos
+            runner: macos-latest
+            target: aarch64-apple-darwin
+          - os: linux
+            runner: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Build
+        run: cargo build --target ${{ matrix.target }}
+
+      - name: Run unit tests
+        run: cargo test --lib --target ${{ matrix.target }}
+
+      - name: Run integration tests
+        run: cargo test --test ratpack_integration --target ${{ matrix.target }}
+
+      - name: Run doc tests
+        run: cargo test --doc
+
+  # ---------------------------------------------------------------------------
+  # Cross-compile for mobile targets (build only — no test execution)
+  # ---------------------------------------------------------------------------
+  cross-compile:
+    name: Cross-compile (${{ matrix.target }})
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: aarch64-apple-ios
+            runner: macos-latest
+          - target: aarch64-linux-android
+            runner: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Build library for ${{ matrix.target }}
+        run: cargo build --lib --target ${{ matrix.target }}
+
+  # ---------------------------------------------------------------------------
+  # Lint
+  # ---------------------------------------------------------------------------
+  lint:
+    name: Clippy + format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Clippy
+        run: cargo clippy --all-targets
+
+      - name: Rustfmt check
+        run: cargo fmt -- --check
+        continue-on-error: true
