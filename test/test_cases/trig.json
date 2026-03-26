@@ -131,9 +131,9 @@
   },
   {
     "id": "tan_003",
-    "function": "tan_rat",
-    "description": "tan(π/2) → Domain error (undefined)",
-    "inputs": { "x": "1.57079632679489661923" },
+    "function": "tan_angle_rat",
+    "description": "tan(270°) → Domain error in degrees (cos(270°) = 0)",
+    "inputs": { "x": "270", "angle_type": "Degrees" },
     "params": { "radix": 10, "precision": 128 },
     "expected": { "result": null, "error": "Domain" },
     "tolerance": null,

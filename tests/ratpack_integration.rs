@@ -15,8 +15,16 @@ use calc_manager::ratpack::exp::{exp_rat, log10_rat, log_rat, pow_rat, root_rat}
 use calc_manager::ratpack::fact::fact_rat;
 use calc_manager::ratpack::logic::{and_rat, lsh_rat, mod_rat, or_rat, rsh_rat, xor_rat};
 use calc_manager::ratpack::support::{frac_rat, gcd_rat, int_rat};
+use calc_manager::ratpack::trans::{
+    sin_rat, cos_rat, tan_rat, sin_angle_rat, cos_angle_rat, tan_angle_rat,
+    sinh_rat, cosh_rat, tanh_rat,
+};
+use calc_manager::ratpack::itrans::{
+    asin_rat, acos_rat, atan_rat, asin_angle_rat, acos_angle_rat, atan_angle_rat,
+    asinh_rat, acosh_rat, atanh_rat,
+};
 use calc_manager::ratpack::Rational;
-use calc_manager::types::NumberFormat;
+use calc_manager::types::{AngleType, NumberFormat};
 
 // ---------------------------------------------------------------------------
 // JSON deserialization types
@@ -196,26 +204,8 @@ fn compare_result(
     }
 }
 
-/// Set of functions in trig/itrig stub modules — skip these.
+/// Set of functions — none skipped now that trig/itrig are implemented.
 const SKIPPED_FUNCTIONS: &[&str] = &[
-    "sin_rat",
-    "cos_rat",
-    "tan_rat",
-    "sin_angle_rat",
-    "cos_angle_rat",
-    "tan_angle_rat",
-    "asin_rat",
-    "acos_rat",
-    "atan_rat",
-    "sinh_rat",
-    "cosh_rat",
-    "tanh_rat",
-    "asinh_rat",
-    "acosh_rat",
-    "atanh_rat",
-    "asin_angle_rat",
-    "acos_angle_rat",
-    "atan_angle_rat",
 ];
 
 // ---------------------------------------------------------------------------
@@ -548,6 +538,38 @@ fn run_case_inner(case: &TestCase) -> Result<(), String> {
             }
         }
 
+        // --- Trig (mutate, need constants) ---
+        "sin_rat" => run_unary_mutate_constants(case, |x, r, p, c| sin_rat(x, r, p, c)),
+        "cos_rat" => run_unary_mutate_constants(case, |x, r, p, c| cos_rat(x, r, p, c)),
+        "tan_rat" => run_unary_mutate_constants(case, |x, r, p, c| tan_rat(x, r, p, c)),
+        "sinh_rat" => run_unary_mutate_constants(case, |x, r, p, c| sinh_rat(x, r, p, c)),
+        "cosh_rat" => run_unary_mutate_constants(case, |x, r, p, c| cosh_rat(x, r, p, c)),
+        "tanh_rat" => run_unary_mutate_constants(case, |x, r, p, c| tanh_rat(x, r, p, c)),
+
+        // --- Angle trig (mutate, need constants + angle type) ---
+        "sin_angle_rat" | "cos_angle_rat" | "tan_angle_rat" => {
+            run_angle_trig(case, &case.function)
+        }
+
+        // --- Inverse trig (mutate, need constants) ---
+        "asin_rat" => run_unary_mutate_constants(case, |x, r, p, c| asin_rat(x, r, p, c)),
+        "acos_rat" => run_unary_mutate_constants(case, |x, r, p, c| acos_rat(x, r, p, c)),
+        "atan_rat" => run_unary_mutate_constants(case, |x, r, p, c| atan_rat(x, r, p, c)),
+        "asinh_rat" => run_unary_mutate_constants(case, |x, r, p, c| asinh_rat(x, r, p, c)),
+        "acosh_rat" => run_unary_mutate_constants(case, |x, r, p, c| acosh_rat(x, r, p, c)),
+        "atanh_rat" => {
+            let x_str = get_str_input(&case.inputs, "x");
+            let mut x = parse_input(x_str, radix, precision);
+            let constants = RatpackConstants::new(radix, precision);
+            let result = atanh_rat(&mut x, precision, &constants).map(|()| x);
+            check_result(result, case)
+        }
+
+        // --- Inverse angle trig (mutate, need constants + angle type) ---
+        "asin_angle_rat" | "acos_angle_rat" | "atan_angle_rat" => {
+            run_angle_itrig(case, &case.function)
+        }
+
         other => Err(format!("Unknown function: {other}")),
     }
 }
@@ -606,6 +628,52 @@ fn run_unary_mutate_constants(
     let mut x = parse_input(x_str, radix, precision);
     let constants = RatpackConstants::new(radix, precision);
     let result = f(&mut x, radix, precision, &constants).map(|()| x);
+    check_result(result, case)
+}
+
+/// Parse angle type from test case inputs.
+fn parse_angle_type(s: &str) -> AngleType {
+    match s {
+        "Degrees" => AngleType::Degrees,
+        "Radians" => AngleType::Radians,
+        "Gradians" => AngleType::Gradians,
+        _ => panic!("Unknown angle type: {s}"),
+    }
+}
+
+/// Run an angle trig function (sin_angle_rat, cos_angle_rat, tan_angle_rat).
+fn run_angle_trig(case: &TestCase, func: &str) -> Result<(), String> {
+    let radix = case.params.radix;
+    let precision = case.params.precision;
+    let x_str = get_str_input(&case.inputs, "x");
+    let angle_str = get_str_input(&case.inputs, "angle_type");
+    let mut x = parse_input(x_str, radix, precision);
+    let angle_type = parse_angle_type(angle_str);
+    let constants = RatpackConstants::new(radix, precision);
+    let result = match func {
+        "sin_angle_rat" => sin_angle_rat(&mut x, angle_type, radix, precision, &constants).map(|()| x),
+        "cos_angle_rat" => cos_angle_rat(&mut x, angle_type, radix, precision, &constants).map(|()| x),
+        "tan_angle_rat" => tan_angle_rat(&mut x, angle_type, radix, precision, &constants).map(|()| x),
+        _ => unreachable!(),
+    };
+    check_result(result, case)
+}
+
+/// Run an inverse angle trig function (asin_angle_rat, acos_angle_rat, atan_angle_rat).
+fn run_angle_itrig(case: &TestCase, func: &str) -> Result<(), String> {
+    let radix = case.params.radix;
+    let precision = case.params.precision;
+    let x_str = get_str_input(&case.inputs, "x");
+    let angle_str = get_str_input(&case.inputs, "angle_type");
+    let mut x = parse_input(x_str, radix, precision);
+    let angle_type = parse_angle_type(angle_str);
+    let constants = RatpackConstants::new(radix, precision);
+    let result = match func {
+        "asin_angle_rat" => asin_angle_rat(&mut x, angle_type, radix, precision, &constants).map(|()| x),
+        "acos_angle_rat" => acos_angle_rat(&mut x, angle_type, radix, precision, &constants).map(|()| x),
+        "atan_angle_rat" => atan_angle_rat(&mut x, angle_type, radix, precision, &constants).map(|()| x),
+        _ => unreachable!(),
+    };
     check_result(result, case)
 }
 

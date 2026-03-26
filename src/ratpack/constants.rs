@@ -175,16 +175,24 @@ impl RatpackConstants {
     ///   5. rad_to_deg = 180/pi, rad_to_grad = 200/pi
     fn compute_transcendentals(rat_two: &Rational, precision: i32, ratio: i32) -> Transcendentals {
         use super::exp::{_exp_rat_bootstrap, _log_rat_bootstrap};
+        use super::itrans::_asin_rat_bootstrap;
 
         // Extra precision for intermediate computations (matches C++)
         let extra_precision = precision + ratio;
 
-        // pi ≈ 355/113 (accurate to 6 decimal places)
-        // TODO: compute via asin(0.5)*6 once trig is ported
-        let pi = Rational::new(
-            Number::from_i32(355, BASEX),
-            Number::from_i32(113, BASEX),
+        let rat_six = Rational::from_i32(6);
+
+        // pi = 6 * asin(0.5), matching C++ ChangeConstants:
+        //   DUPRAT(my_two_pi, rat_half);
+        //   asinrat(&my_two_pi, radix, precision);  // asin(0.5) = π/6
+        //   mulrat(&my_two_pi, rat_six, precision);  // π
+        let rat_half = Rational::new(
+            Number::from_i32(1, BASEX),
+            Number::from_i32(2, BASEX),
         );
+        let mut pi = rat_half.clone();
+        let _ = _asin_rat_bootstrap(&mut pi, extra_precision, ratio);
+        pi = mul_rat(&pi, &rat_six, extra_precision);
 
         let two_pi = mul_rat(&pi, rat_two, extra_precision);
         let pi_over_two = div_rat(&pi, rat_two, extra_precision)
@@ -196,10 +204,6 @@ impl RatpackConstants {
         let one_pt_five_pi = mul_rat(&pi, &three_halves, extra_precision);
 
         // 1. e_to_one_half = exp(0.5) — _exprat is self-contained
-        let rat_half = Rational::new(
-            Number::from_i32(1, BASEX),
-            Number::from_i32(2, BASEX),
-        );
         let mut e_to_one_half = rat_half;
         let _ = _exp_rat_bootstrap(&mut e_to_one_half, extra_precision, ratio);
 
