@@ -15,7 +15,7 @@ use super::arithmetic::{
     add_num, add_rat, div_rat, mul_num_x, mul_rat, rat_gt, rat_lt, rat_neq, sub_rat,
 };
 use super::constants::RatpackConstants;
-use super::exp::{_log_rat, exp_rat_in_place, pow_rat_comp};
+use super::exp::{_log_rat, exp_rat, pow_rat};
 use super::support::{frac_rat, int_rat};
 use super::Number;
 use super::Rational;
@@ -56,9 +56,8 @@ fn rat_to_i32(r: &Rational, radix: u32, precision: i32) -> CalcResult<i32> {
 ///
 /// # Note
 ///
-/// This function depends on exp.rs functions (`_log_rat`, `exp_rat_in_place`,
-/// `pow_rat_comp`) which are currently stubs. Non-integer factorial results
-/// will not be correct until exp.rs is fully ported.
+/// This function depends on exp.rs functions (`_log_rat`, `exp_rat`,
+/// `pow_rat`). Non-integer factorial results require fully ported exp.rs.
 fn _gamma(
     n: &mut Rational,
     radix: u32,
@@ -90,9 +89,9 @@ fn _gamma(
     tmp = add_rat(&tmp, &one_pt_five, precision);
 
     let mut term = a.clone();
-    pow_rat_comp(&mut term, &tmp, radix, precision, constants)?;
+    pow_rat(&mut term, &tmp, radix, precision, constants)?;
     tmp = a.clone();
-    exp_rat_in_place(&mut tmp, radix, precision, constants)?;
+    exp_rat(&mut tmp, radix, precision, constants)?;
     term = mul_rat(&term, &tmp, precision);
     _log_rat(&mut term, precision, constants)?;
 
@@ -101,10 +100,8 @@ fn _gamma(
     _log_rat(&mut tmp, precision, constants)?;
     term = sub_rat(&term, &tmp, precision);
 
-    // Bump precision by the integer part of term
-    if let Ok(bump) = rat_to_i32(&term, radix, precision) {
-        precision += bump;
-    }
+    // Bump precision by the integer part of term (matching C++ which throws on failure)
+    precision += rat_to_i32(&term, radix, precision)?;
 
     // ── Series computation ───────────────────────────────────────────────
     let mut factorial = constants.rat_one.clone();
@@ -112,7 +109,7 @@ fn _gamma(
 
     // mpy = a^n (computed with original n, before loop modifies it)
     let mut mpy = a.clone();
-    pow_rat_comp(&mut mpy, n, radix, precision, constants)?;
+    pow_rat(&mut mpy, n, radix, precision, constants)?;
 
     // a2 = a^2 (used to divide factorial each iteration)
     let a2 = mul_rat(&a, &a, precision);
@@ -127,7 +124,7 @@ fn _gamma(
     // err = radix^(-original_precision) / radix
     let mut err = rat_radix.clone();
     ratprec.negate_mut();
-    pow_rat_comp(&mut err, &ratprec, radix, precision, constants)?;
+    pow_rat(&mut err, &ratprec, radix, precision, constants)?;
     err = div_rat(&err, &rat_radix, precision)?;
 
     // ── Main loop ────────────────────────────────────────────────────────
