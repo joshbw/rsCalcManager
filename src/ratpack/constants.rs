@@ -6,7 +6,7 @@
 
 use crate::types::{BASEX, BASEX_PWR};
 
-use super::arithmetic::{rat_pow_i32, sub_rat, mul_rat, div_rat};
+use super::arithmetic::{rat_pow_i32, sub_rat, mul_rat, div_rat, add_rat};
 use super::Number;
 use super::Rational;
 
@@ -98,7 +98,7 @@ impl RatpackConstants {
         let word_limits = Self::compute_word_limits(&rat_two, &rat_one, precision);
 
         // Transcendental constant approximations
-        let transcendentals = Self::compute_transcendentals(&rat_two, precision);
+        let transcendentals = Self::compute_transcendentals(&rat_two, precision, ratio);
 
         Self {
             rat_zero: Rational::zero(),
@@ -165,22 +165,60 @@ impl RatpackConstants {
         }
     }
 
-    /// Compute transcendental constant approximations.
-    fn compute_transcendentals(rat_two: &Rational, precision: i32) -> Transcendentals {
+    /// Compute transcendental constants at full precision.
+    ///
+    /// Mirrors C++ `ChangeConstants` from support.cpp:
+    ///   1. e_to_one_half = exp(0.5)   — _exprat doesn't need transcendental constants
+    ///   2. rat_exp = exp(1)            — same
+    ///   3. ln_ten = log(10)            — needs e_to_one_half for scaling
+    ///   4. ln_two = log(2)             — needs e_to_one_half for scaling
+    ///   5. rad_to_deg = 180/pi, rad_to_grad = 200/pi
+    fn compute_transcendentals(rat_two: &Rational, precision: i32, ratio: i32) -> Transcendentals {
+        use super::exp::{_exp_rat_bootstrap, _log_rat_bootstrap};
+
+        // Extra precision for intermediate computations (matches C++)
+        let extra_precision = precision + ratio;
+
         // pi ≈ 355/113 (accurate to 6 decimal places)
+        // TODO: compute via asin(0.5)*6 once trig is ported
         let pi = Rational::new(
             Number::from_i32(355, BASEX),
             Number::from_i32(113, BASEX),
         );
 
-        let two_pi = mul_rat(&pi, rat_two, precision);
-        let pi_over_two = div_rat(&pi, rat_two, precision)
+        let two_pi = mul_rat(&pi, rat_two, extra_precision);
+        let pi_over_two = div_rat(&pi, rat_two, extra_precision)
             .unwrap_or_else(|_| Rational::zero());
         let three_halves = Rational::new(
             Number::from_i32(3, BASEX),
             Number::from_i32(2, BASEX),
         );
-        let one_pt_five_pi = mul_rat(&pi, &three_halves, precision);
+        let one_pt_five_pi = mul_rat(&pi, &three_halves, extra_precision);
+
+        // 1. e_to_one_half = exp(0.5) — _exprat is self-contained
+        let rat_half = Rational::new(
+            Number::from_i32(1, BASEX),
+            Number::from_i32(2, BASEX),
+        );
+        let mut e_to_one_half = rat_half;
+        let _ = _exp_rat_bootstrap(&mut e_to_one_half, extra_precision, ratio);
+
+        // 2. rat_exp = exp(1)
+        let mut rat_exp = Rational::one();
+        let _ = _exp_rat_bootstrap(&mut rat_exp, extra_precision, ratio);
+
+        // 3. ln_ten = log(10) — uses e_to_one_half for scaling, ln_two not needed (log2_est=0)
+        let mut ln_ten = Rational::from_i32(10);
+        // Use rough ln_two for bootstrapping (only used if log2_est > 1)
+        let rough_ln_two = Rational::new(
+            Number::from_i32(693, BASEX),
+            Number::from_i32(1000, BASEX),
+        );
+        let _ = _log_rat_bootstrap(&mut ln_ten, extra_precision, ratio, &e_to_one_half, &rough_ln_two, rat_two);
+
+        // 4. ln_two = log(2) — uses e_to_one_half for scaling
+        let mut ln_two = Rational::from_i32(2);
+        let _ = _log_rat_bootstrap(&mut ln_two, extra_precision, ratio, &e_to_one_half, &rough_ln_two, rat_two);
 
         let rat_180 = Rational::from_i32(180);
         let rat_200 = Rational::from_i32(200);
@@ -190,25 +228,13 @@ impl RatpackConstants {
             two_pi,
             pi_over_two,
             one_pt_five_pi,
-            rat_exp: Rational::new(
-                Number::from_i32(2718, BASEX),
-                Number::from_i32(1000, BASEX),
-            ),
-            e_to_one_half: Rational::new(
-                Number::from_i32(1649, BASEX),
-                Number::from_i32(1000, BASEX),
-            ),
-            ln_ten: Rational::new(
-                Number::from_i32(2303, BASEX),
-                Number::from_i32(1000, BASEX),
-            ),
-            ln_two: Rational::new(
-                Number::from_i32(693, BASEX),
-                Number::from_i32(1000, BASEX),
-            ),
-            rad_to_deg: div_rat(&rat_180, &pi, precision)
+            rat_exp,
+            e_to_one_half,
+            ln_ten,
+            ln_two,
+            rad_to_deg: div_rat(&rat_180, &pi, extra_precision)
                 .unwrap_or_else(|_| Rational::zero()),
-            rad_to_grad: div_rat(&rat_200, &pi, precision)
+            rad_to_grad: div_rat(&rat_200, &pi, extra_precision)
                 .unwrap_or_else(|_| Rational::zero()),
         }
     }

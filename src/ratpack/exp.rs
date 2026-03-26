@@ -8,13 +8,68 @@ use crate::error::{CalcError, CalcResult};
 use crate::types::{BASEX, BASEX_PWR};
 
 use super::arithmetic::{
-    add_num, add_rat, div_rat, mul_num_x, mul_rat, rat_equ, rat_gt, rat_le, rat_lt, rat_pow_i32,
-    sub_rat,
+    add_num, add_rat, div_num_x, div_rat, mul_num_x, mul_rat, rat_equ, rat_gt, rat_le, rat_lt,
+    rat_pow_i32, sub_rat,
 };
 use super::constants::RatpackConstants;
 use super::support::{frac_rat, int_rat, snap_rat, trim_rat};
 use super::Number;
 use super::Rational;
+
+// ---------------------------------------------------------------------------
+// Taylor-series helpers (Rust equivalents of C++ macros)
+// ---------------------------------------------------------------------------
+
+/// Equivalent of C++ `trimit`: trims a rational to avoid digit explosion.
+///
+/// In C++, this is called inside `mulrat`, `_addrat`, and `divrat` using globals.
+/// In Rust, we call it explicitly after arithmetic in iterative loops.
+#[inline]
+fn trimit(rat: &mut Rational, precision: i32, ratio: i32, true_infinite: bool) {
+    trim_rat(rat, precision, ratio, true_infinite);
+}
+
+/// Trimmed multiply: equivalent of C++ `mulrat` which internally calls `trimit`.
+#[inline]
+fn mul_rat_t(
+    a: &Rational,
+    b: &Rational,
+    precision: i32,
+    ratio: i32,
+    true_infinite: bool,
+) -> Rational {
+    let mut result = mul_rat(a, b, precision);
+    trimit(&mut result, precision, ratio, true_infinite);
+    result
+}
+
+/// Trimmed add: equivalent of C++ `_addrat` which internally calls `trimit`.
+#[inline]
+fn add_rat_t(
+    a: &Rational,
+    b: &Rational,
+    precision: i32,
+    ratio: i32,
+    true_infinite: bool,
+) -> Rational {
+    let mut result = add_rat(a, b, precision);
+    trimit(&mut result, precision, ratio, true_infinite);
+    result
+}
+
+/// Trimmed div: equivalent of C++ `divrat` which internally calls `trimit`.
+#[inline]
+fn div_rat_t(
+    a: &Rational,
+    b: &Rational,
+    precision: i32,
+    ratio: i32,
+    true_infinite: bool,
+) -> CalcResult<Rational> {
+    let mut result = div_rat(a, b, precision)?;
+    trimit(&mut result, precision, ratio, true_infinite);
+    Ok(result)
+}
 
 // ---------------------------------------------------------------------------
 // Taylor-series helpers (Rust equivalents of C++ macros)
@@ -70,6 +125,25 @@ fn inc_num(n: &mut Number) {
     }
 }
 
+/// Convert a rational to i32, matching C++ `rattoi32`.
+///
+/// After `int_rat`, the denominator should be 1, so we extract the numerator
+/// directly. If the denominator is not 1 (edge case), we fall back to
+/// `div_num_x` to normalize.
+fn rat_to_i32(x: &Rational, radix: u32, precision: i32) -> CalcResult<i32> {
+    let mut tmp = x.clone();
+    int_rat(&mut tmp, radix, precision)?;
+    let one = Number::from_i32(1, BASEX);
+    if tmp.q().mantissa == one.mantissa && tmp.q().exp == one.exp {
+        // Fast path: denominator is 1 (normal case after int_rat)
+        tmp.p().to_i32(BASEX).ok_or(CalcError::Overflow)
+    } else {
+        // Slow path: normalize by dividing (matches C++ rattoi32 conv.cpp:895-899)
+        let divided = div_num_x(tmp.p(), tmp.q(), precision)?;
+        divided.to_i32(BASEX).ok_or(CalcError::Overflow)
+    }
+}
+
 // ---------------------------------------------------------------------------
 // _exprat — internal Taylor series for e^x (no domain check)
 //
@@ -85,14 +159,11 @@ fn _exp_rat(
     precision: i32,
     constants: &RatpackConstants,
 ) -> CalcResult<()> {
+    let ratio = constants.ratio;
+    let ti = constants.true_infinite;
+
     // CREATETAYLOR:
-    // xx = x * x (not directly used in exp iteration, but allocated by macro)
-    // pret = 0/0 initially, then set to 1/1
-    // thisterm = 1/1
-    // n2 = 0
     let mut pret = Rational::new(Number::from_i32(0, BASEX), Number::from_i32(0, BASEX));
-    // addnum(&(pret->pp), num_one, BASEX)  => pret.p = 0 + 1 = 1
-    // addnum(&(pret->pq), num_one, BASEX)  => pret.q = 0 + 1 = 1
     let one = Number::from_i32(1, BASEX);
     *pret.p_mut() = add_num(pret.p(), &one, BASEX);
     *pret.q_mut() = add_num(pret.q(), &one, BASEX);
@@ -101,24 +172,143 @@ fn _exp_rat(
 
     loop {
         // NEXTTERM(*px, INC(n2) DIVNUM(n2), precision):
-        //   thisterm = thisterm * x
-        thisterm = mul_rat(&thisterm, x, precision);
-        //   INC(n2): n2 += 1
+        thisterm = mul_rat_t(&thisterm, x, precision, ratio, ti);
         inc_num(&mut n2);
-        //   DIVNUM(n2): thisterm.q = thisterm.q * n2
         let new_q = mul_num_x(thisterm.q(), &n2);
         *thisterm.q_mut() = new_q;
-        //   pret += thisterm
-        pret = add_rat(&pret, &thisterm, precision);
+        pret = add_rat_t(&pret, &thisterm, precision, ratio, ti);
 
-        if small_enough_rat(&thisterm, precision, constants.ratio) {
+        if small_enough_rat(&thisterm, precision, ratio) {
             break;
         }
     }
 
     // DESTROYTAYLOR:
-    trim_rat(&mut pret, precision, constants.ratio, constants.true_infinite);
+    trimit(&mut pret, precision, ratio, ti);
     *x = pret;
+    Ok(())
+}
+
+/// Bootstrap version of _exp_rat for computing constants during initialization.
+/// Does not depend on RatpackConstants.
+pub(crate) fn _exp_rat_bootstrap(
+    x: &mut Rational,
+    precision: i32,
+    ratio: i32,
+) -> CalcResult<()> {
+    let ti = false; // never true_infinite during bootstrapping
+
+    let mut pret = Rational::new(Number::from_i32(0, BASEX), Number::from_i32(0, BASEX));
+    let one = Number::from_i32(1, BASEX);
+    *pret.p_mut() = add_num(pret.p(), &one, BASEX);
+    *pret.q_mut() = add_num(pret.q(), &one, BASEX);
+    let mut thisterm = pret.clone();
+    let mut n2 = Number::from_i32(0, BASEX);
+
+    loop {
+        thisterm = mul_rat_t(&thisterm, x, precision, ratio, ti);
+        inc_num(&mut n2);
+        let new_q = mul_num_x(thisterm.q(), &n2);
+        *thisterm.q_mut() = new_q;
+        pret = add_rat_t(&pret, &thisterm, precision, ratio, ti);
+
+        if small_enough_rat(&thisterm, precision, ratio) {
+            break;
+        }
+    }
+
+    trimit(&mut pret, precision, ratio, ti);
+    *x = pret;
+    Ok(())
+}
+
+/// Bootstrap version of _log_rat for computing constants during initialization.
+/// Takes explicit e_to_one_half, ln_two, and rat_two instead of RatpackConstants.
+pub(crate) fn _log_rat_bootstrap(
+    x: &mut Rational,
+    precision: i32,
+    ratio: i32,
+    e_to_one_half: &Rational,
+    ln_two: &Rational,
+    rat_two: &Rational,
+) -> CalcResult<()> {
+    let ti = false;
+    let rat_zero = Rational::zero();
+    let rat_one = Rational::one();
+
+    // Domain check
+    if rat_le(x, &rat_zero, precision) {
+        return Err(CalcError::Domain);
+    }
+
+    let fneglog = rat_lt(x, &rat_one, precision);
+    if fneglog {
+        let p_temp = x.p().clone();
+        *x.p_mut() = x.q().clone();
+        *x.q_mut() = p_temp;
+    }
+
+    // Scale by powers of 2
+    let log2_est = x.log2_estimate();
+    let mut pwr;
+    if log2_est > 1 {
+        let intpwr = log2_est - 1;
+        x.q_mut().exp += intpwr;
+        pwr = Rational::from_i32(intpwr * (BASEX_PWR as i32));
+        pwr = mul_rat_t(&pwr, ln_two, precision, ratio, ti);
+        trim_top(x, precision, ratio, ti);
+    } else {
+        pwr = rat_zero.clone();
+    }
+
+    // Scale between 1 and e^0.5
+    let mut offset = rat_zero.clone();
+    while rat_gt(x, e_to_one_half, precision) {
+        *x = div_rat_t(x, e_to_one_half, precision, ratio, ti)?;
+        offset = add_rat_t(&offset, &rat_one, precision, ratio, ti);
+    }
+
+    // Taylor series for log (near 1) — inline __log_rat logic
+    {
+        x.q_mut().sign *= -1;
+        let new_p = add_num(x.p(), x.q(), BASEX);
+        *x.p_mut() = new_p;
+        x.q_mut().sign *= -1;
+
+        let mut pret_inner = x.clone();
+        let mut thisterm = x.clone();
+        let mut n2 = Number::from_i32(1, BASEX);
+        x.p_mut().sign *= -1;
+
+        loop {
+            thisterm = mul_rat_t(&thisterm, x, precision, ratio, ti);
+            let new_p = mul_num_x(thisterm.p(), &n2);
+            *thisterm.p_mut() = new_p;
+            inc_num(&mut n2);
+            let new_q = mul_num_x(thisterm.q(), &n2);
+            *thisterm.q_mut() = new_q;
+            pret_inner = add_rat_t(&pret_inner, &thisterm, precision, ratio, ti);
+            trim_top(x, precision, ratio, ti);
+
+            if small_enough_rat(&thisterm, precision, ratio) {
+                break;
+            }
+        }
+
+        trimit(&mut pret_inner, precision, ratio, ti);
+        *x = pret_inner;
+    }
+
+    // offset was in e^0.5 chunks
+    offset = div_rat_t(&offset, rat_two, precision, ratio, ti)?;
+    pwr = add_rat_t(&pwr, &offset, precision, ratio, ti);
+    *x = add_rat_t(x, &pwr, precision, ratio, ti);
+    trimit(x, precision, ratio, ti);
+
+    if fneglog {
+        x.p_mut().sign *= -1;
+    }
+
     Ok(())
 }
 
@@ -134,11 +324,11 @@ pub fn exp_rat(
     precision: i32,
     constants: &RatpackConstants,
 ) -> CalcResult<()> {
-    // Domain check
+    // Overflow check: result would be too large (or too small) to represent
     if rat_gt(x, &constants.rat_max_exp, precision)
         || rat_lt(x, &constants.rat_min_exp, precision)
     {
-        return Err(CalcError::Domain);
+        return Err(CalcError::Overflow);
     }
 
     // pwr = e (will become e^intpwr)
@@ -148,12 +338,8 @@ pub fn exp_rat(
     let mut pint = x.clone();
     int_rat(&mut pint, radix, precision)?;
 
-    // intpwr = pint as i32
-    let intpwr = pint
-        .p()
-        .to_i32(BASEX)
-        .ok_or(CalcError::Overflow)?
-        * pint.sign();
+    // intpwr = pint as i32 (matching C++ rattoi32)
+    let intpwr = rat_to_i32(&pint, radix, precision)?;
 
     // pwr = e^intpwr
     pwr = rat_pow_i32(&pwr, intpwr, precision)?;
@@ -197,12 +383,13 @@ fn __log_rat(
     precision: i32,
     constants: &RatpackConstants,
 ) -> CalcResult<()> {
-    // CREATETAYLOR — allocate variables (xx not used in log iteration)
+    let ratio = constants.ratio;
+    let ti = constants.true_infinite;
+
+    // CREATETAYLOR
     let mut thisterm: Rational;
 
     // Compute x - 1:
-    //   C++: x->pq->sign *= -1; addnum(&(x->pp), x->pq, BASEX); x->pq->sign *= -1;
-    //   This computes pp = pp + (-pq) = pp - pq. Since x = pp/pq, (pp-pq)/pq = x - 1.
     x.q_mut().sign *= -1;
     let new_p = add_num(x.p(), x.q(), BASEX);
     *x.p_mut() = new_p;
@@ -217,34 +404,32 @@ fn __log_rat(
     let mut n2 = Number::from_i32(1, BASEX);
 
     // Negate pp sign of x: now x represents -(x-1) = (1-x)
-    // This means in the loop, multiplying by x gives us the alternating sign
     x.p_mut().sign *= -1;
 
     loop {
         // NEXTTERM(*px, MULNUM(n2) INC(n2) DIVNUM(n2), precision):
-        //   thisterm = thisterm * x
-        thisterm = mul_rat(&thisterm, x, precision);
-        //   MULNUM(n2): thisterm.p = thisterm.p * n2
+        thisterm = mul_rat_t(&thisterm, x, precision, ratio, ti);
+        // MULNUM(n2): thisterm.p = thisterm.p * n2
         let new_p = mul_num_x(thisterm.p(), &n2);
         *thisterm.p_mut() = new_p;
-        //   INC(n2): n2 += 1
+        // INC(n2): n2 += 1
         inc_num(&mut n2);
-        //   DIVNUM(n2): thisterm.q = thisterm.q * n2
+        // DIVNUM(n2): thisterm.q = thisterm.q * n2
         let new_q = mul_num_x(thisterm.q(), &n2);
         *thisterm.q_mut() = new_q;
-        //   pret += thisterm
-        pret = add_rat(&pret, &thisterm, precision);
+        // pret += thisterm
+        pret = add_rat_t(&pret, &thisterm, precision, ratio, ti);
 
         // TRIMTOP on x
-        trim_top(x, precision, constants.ratio, constants.true_infinite);
+        trim_top(x, precision, ratio, ti);
 
-        if small_enough_rat(&thisterm, precision, constants.ratio) {
+        if small_enough_rat(&thisterm, precision, ratio) {
             break;
         }
     }
 
     // DESTROYTAYLOR
-    trim_rat(&mut pret, precision, constants.ratio, constants.true_infinite);
+    trimit(&mut pret, precision, ratio, ti);
     *x = pret;
     Ok(())
 }
@@ -260,6 +445,9 @@ pub fn _log_rat(
     precision: i32,
     constants: &RatpackConstants,
 ) -> CalcResult<()> {
+    let ratio = constants.ratio;
+    let ti = constants.true_infinite;
+
     // Domain check: log(x) undefined for x <= 0
     if rat_le(x, &constants.rat_zero, precision) {
         return Err(CalcError::Domain);
@@ -275,19 +463,14 @@ pub fn _log_rat(
     }
 
     // Scale by powers of 2 for large numbers:
-    // log(x * 2^(BASEXPWR*k)) = BASEXPWR*k*ln(2) + log(x)
-    // LOGRAT2(x) = x.p().log2_estimate() - x.q().log2_estimate()
     let log2_est = x.log2_estimate();
     let mut pwr;
     if log2_est > 1 {
         let intpwr = log2_est - 1;
-        // Scale x down: x.q().exp += intpwr
         x.q_mut().exp += intpwr;
-        // pwr = intpwr * BASEXPWR * ln(2)
         pwr = Rational::from_i32(intpwr * (BASEX_PWR as i32));
-        pwr = mul_rat(&pwr, &constants.ln_two, precision);
-        // TRIMTOP
-        trim_top(x, precision, constants.ratio, constants.true_infinite);
+        pwr = mul_rat_t(&pwr, &constants.ln_two, precision, ratio, ti);
+        trim_top(x, precision, ratio, ti);
     } else {
         pwr = constants.rat_zero.clone();
     }
@@ -295,22 +478,22 @@ pub fn _log_rat(
     // Scale between 1 and e^0.5 by dividing by e^0.5 repeatedly
     let mut offset = constants.rat_zero.clone();
     while rat_gt(x, &constants.e_to_one_half, precision) {
-        *x = div_rat(x, &constants.e_to_one_half, precision)?;
-        offset = add_rat(&offset, &constants.rat_one, precision);
+        *x = div_rat_t(x, &constants.e_to_one_half, precision, ratio, ti)?;
+        offset = add_rat_t(&offset, &constants.rat_one, precision, ratio, ti);
     }
 
     // Compute log of scaled x (now near 1)
     __log_rat(x, precision, constants)?;
 
     // offset was in e^0.5 chunks, so divide by 2 to get in e^1 units
-    offset = div_rat(&offset, &constants.rat_two, precision)?;
-    pwr = add_rat(&pwr, &offset, precision);
+    offset = div_rat_t(&offset, &constants.rat_two, precision, ratio, ti)?;
+    pwr = add_rat_t(&pwr, &offset, precision, ratio, ti);
 
     // Add scaling factor to result
-    *x = add_rat(x, &pwr, precision);
+    *x = add_rat_t(x, &pwr, precision, ratio, ti);
 
     // Trim
-    trim_rat(x, precision, constants.ratio, constants.true_infinite);
+    trimit(x, precision, ratio, ti);
 
     // If original number was < 1, negate result
     if fneglog {
@@ -426,11 +609,8 @@ fn pow_rat_comp(
                 // y is an integer — use ratpowi32
                 let mut iy = y.clone();
                 iy = sub_rat(&iy, &podd, precision);
-                let inty = iy
-                    .p()
-                    .to_i32(BASEX)
-                    .ok_or(CalcError::Overflow)?
-                    * iy.sign();
+                // C++ rattoi32 calls intrat internally
+                let inty = rat_to_i32(&iy, radix, precision)?;
 
                 // Check if y*ln(x) would overflow exp domain
                 let mut plnx = x.clone();
@@ -713,11 +893,11 @@ mod tests {
     }
 
     #[test]
-    fn test_exp_domain_too_large() {
+    fn test_exp_overflow_too_large() {
         let c = make_constants();
         let mut x = Rational::from_i32(200_000);
         let result = exp_rat(&mut x, 10, 128, &c);
-        assert_eq!(result.unwrap_err(), CalcError::Domain);
+        assert_eq!(result.unwrap_err(), CalcError::Overflow);
     }
 
     // -----------------------------------------------------------------------

@@ -16,9 +16,41 @@ use super::arithmetic::{
 };
 use super::constants::RatpackConstants;
 use super::exp::{_log_rat, exp_rat, pow_rat};
-use super::support::{frac_rat, int_rat};
+use super::support::{frac_rat, int_rat, trim_rat};
 use super::Number;
 use super::Rational;
+
+/// Trimmed multiply: equivalent of C++ `mulrat` which internally calls `trimit`.
+#[inline]
+fn mul_rat_t(a: &Rational, b: &Rational, precision: i32, ratio: i32, ti: bool) -> Rational {
+    let mut r = mul_rat(a, b, precision);
+    trim_rat(&mut r, precision, ratio, ti);
+    r
+}
+
+/// Trimmed add: equivalent of C++ `_addrat` which internally calls `trimit`.
+#[inline]
+fn add_rat_t(a: &Rational, b: &Rational, precision: i32, ratio: i32, ti: bool) -> Rational {
+    let mut r = add_rat(a, b, precision);
+    trim_rat(&mut r, precision, ratio, ti);
+    r
+}
+
+/// Trimmed sub: equivalent of C++ `subrat` which internally calls `trimit`.
+#[inline]
+fn sub_rat_t(a: &Rational, b: &Rational, precision: i32, ratio: i32, ti: bool) -> Rational {
+    let mut r = sub_rat(a, b, precision);
+    trim_rat(&mut r, precision, ratio, ti);
+    r
+}
+
+/// Trimmed div: equivalent of C++ `divrat` which internally calls `trimit`.
+#[inline]
+fn div_rat_t(a: &Rational, b: &Rational, precision: i32, ratio: i32, ti: bool) -> CalcResult<Rational> {
+    let mut r = div_rat(a, b, precision)?;
+    trim_rat(&mut r, precision, ratio, ti);
+    Ok(r)
+}
 
 /// Estimate the base-`radix` logarithm of a rational's magnitude.
 ///
@@ -65,6 +97,8 @@ fn _gamma(
     constants: &RatpackConstants,
 ) -> CalcResult<()> {
     let num_one = Number::from_i32(1, BASEX);
+    let ratio = constants.ratio;
+    let ti = constants.true_infinite;
 
     // Save original precision as rational (needed for error bound later)
     let mut ratprec = Rational::from_i32(precision);
@@ -73,32 +107,32 @@ fn _gamma(
     // a = ln(radix) * precision + 2 + n * ln(a_intermediate) + 1
     let mut a = Rational::from_i32(radix as i32);
     _log_rat(&mut a, precision, constants)?;
-    a = mul_rat(&a, &ratprec, precision);
-    a = add_rat(&a, &constants.rat_two, precision);
+    a = mul_rat_t(&a, &ratprec, precision, ratio, ti);
+    a = add_rat_t(&a, &constants.rat_two, precision, ratio, ti);
 
     let mut tmp = a.clone();
     _log_rat(&mut tmp, precision, constants)?;
-    tmp = mul_rat(&tmp, n, precision);
-    a = add_rat(&a, &tmp, precision);
-    a = add_rat(&a, &constants.rat_one, precision);
+    tmp = mul_rat_t(&tmp, n, precision, ratio, ti);
+    a = add_rat_t(&a, &tmp, precision, ratio, ti);
+    a = add_rat_t(&a, &constants.rat_one, precision, ratio, ti);
 
     // ── Calculate precision bump ─────────────────────────────────────────
     // term = ln(a^(n+1.5) * exp(a)) - ln(radix)
     tmp = n.clone();
-    let one_pt_five = div_rat(&Rational::from_i32(3), &constants.rat_two, precision)?;
-    tmp = add_rat(&tmp, &one_pt_five, precision);
+    let one_pt_five = div_rat_t(&Rational::from_i32(3), &constants.rat_two, precision, ratio, ti)?;
+    tmp = add_rat_t(&tmp, &one_pt_five, precision, ratio, ti);
 
     let mut term = a.clone();
     pow_rat(&mut term, &tmp, radix, precision, constants)?;
     tmp = a.clone();
     exp_rat(&mut tmp, radix, precision, constants)?;
-    term = mul_rat(&term, &tmp, precision);
+    term = mul_rat_t(&term, &tmp, precision, ratio, ti);
     _log_rat(&mut term, precision, constants)?;
 
     let rat_radix = Rational::from_i32(radix as i32);
     tmp = rat_radix.clone();
     _log_rat(&mut tmp, precision, constants)?;
-    term = sub_rat(&term, &tmp, precision);
+    term = sub_rat_t(&term, &tmp, precision, ratio, ti);
 
     // Bump precision by the integer part of term (matching C++ which throws on failure)
     precision += rat_to_i32(&term, radix, precision)?;
@@ -112,20 +146,20 @@ fn _gamma(
     pow_rat(&mut mpy, n, radix, precision, constants)?;
 
     // a2 = a^2 (used to divide factorial each iteration)
-    let a2 = mul_rat(&a, &a, precision);
+    let a2 = mul_rat_t(&a, &a, precision, ratio, ti);
 
     // Initial sum = 1/n - a/(n+1)
-    let mut sum = div_rat(&constants.rat_one, n, precision)?;
-    tmp = add_rat(n, &constants.rat_one, precision);
-    term = div_rat(&a, &tmp, precision)?;
-    sum = sub_rat(&sum, &term, precision);
+    let mut sum = div_rat_t(&constants.rat_one, n, precision, ratio, ti)?;
+    tmp = add_rat_t(n, &constants.rat_one, precision, ratio, ti);
+    term = div_rat_t(&a, &tmp, precision, ratio, ti)?;
+    sum = sub_rat_t(&sum, &term, precision, ratio, ti);
 
     // ── Error bound ──────────────────────────────────────────────────────
     // err = radix^(-original_precision) / radix
     let mut err = rat_radix.clone();
     ratprec.negate_mut();
     pow_rat(&mut err, &ratprec, radix, precision, constants)?;
-    err = div_rat(&err, &rat_radix, precision)?;
+    err = div_rat_t(&err, &rat_radix, precision, ratio, ti)?;
 
     // ── Main loop ────────────────────────────────────────────────────────
     // Initialize term to 2 (non-zero) to enter the loop
@@ -133,7 +167,7 @@ fn _gamma(
 
     while !term.is_zero() && rat_gt(&term, &err, precision) {
         // n += 2 (each iteration advances by 2)
-        *n = add_rat(n, &constants.rat_two, precision);
+        *n = add_rat_t(n, &constants.rat_two, precision, ratio, ti);
 
         // factorial numerator *= (count+1) * (count+2), then divide by a^2
         count = add_num(&count, &num_one, BASEX);
@@ -144,35 +178,35 @@ fn _gamma(
         let new_p = mul_num_x(factorial.p(), &count);
         *factorial.p_mut() = new_p;
 
-        factorial = div_rat(&factorial, &a2, precision)?;
+        factorial = div_rat_t(&factorial, &a2, precision, ratio, ti)?;
 
         // tmp = n + 1
-        tmp = add_rat(n, &constants.rat_one, precision);
+        tmp = add_rat_t(n, &constants.rat_one, precision, ratio, ti);
 
         // term = (count + 1) * (n + 1)
         term = Rational::new(count.clone(), num_one.clone());
-        term = add_rat(&term, &constants.rat_one, precision);
-        term = mul_rat(&term, &tmp, precision);
+        term = add_rat_t(&term, &constants.rat_one, precision, ratio, ti);
+        term = mul_rat_t(&term, &tmp, precision, ratio, ti);
 
         // tmp = a / ((count+1) * (n+1))
-        tmp = div_rat(&a, &term, precision)?;
+        tmp = div_rat_t(&a, &term, precision, ratio, ti)?;
 
         // term = 1/n - a/((count+1)*(n+1))
-        term = div_rat(&constants.rat_one, n, precision)?;
-        term = sub_rat(&term, &tmp, precision);
+        term = div_rat_t(&constants.rat_one, n, precision, ratio, ti)?;
+        term = sub_rat_t(&term, &tmp, precision, ratio, ti);
 
         // term /= factorial
-        term = div_rat(&term, &factorial, precision)?;
+        term = div_rat_t(&term, &factorial, precision, ratio, ti)?;
 
         // Accumulate
-        sum = add_rat(&sum, &term, precision);
+        sum = add_rat_t(&sum, &term, precision, ratio, ti);
 
         // |term| for convergence check
         term.abs_mut();
     }
 
     // Result = sum * a^n
-    sum = mul_rat(&sum, &mpy, precision);
+    sum = mul_rat_t(&sum, &mpy, precision, ratio, ti);
     *n = sum;
 
     Ok(())
@@ -203,6 +237,9 @@ pub fn fact_rat(
         return Err(CalcError::Overflow);
     }
 
+    let ratio = constants.ratio;
+    let ti = constants.true_infinite;
+
     let mut fact = constants.rat_one.clone();
     let neg_rat_one = constants.rat_neg_one.clone();
 
@@ -220,8 +257,8 @@ pub fn fact_rat(
     while rat_gt(x, &constants.rat_zero, precision)
         && log_rat_radix(x, constants.ratio) > -precision
     {
-        fact = mul_rat(&fact, x, precision);
-        *x = sub_rat(x, &constants.rat_one, precision);
+        fact = mul_rat_t(&fact, x, precision, ratio, ti);
+        *x = sub_rat_t(x, &constants.rat_one, precision, ratio, ti);
     }
 
     // ── Snap to integer if x ≈ 0 ────────────────────────────────────────
@@ -232,15 +269,15 @@ pub fn fact_rat(
 
     // ── Handle negative non-integer args: divide up toward −1 ────────
     while rat_lt(x, &neg_rat_one, precision) {
-        *x = add_rat(x, &constants.rat_one, precision);
-        fact = div_rat(&fact, x, precision)?;
+        *x = add_rat_t(x, &constants.rat_one, precision, ratio, ti);
+        fact = div_rat_t(&fact, x, precision, ratio, ti)?;
     }
 
     // ── If fractional remainder, use gamma; otherwise return fact ─────
     if rat_neq(x, &constants.rat_zero, precision) {
-        *x = add_rat(x, &constants.rat_one, precision);
+        *x = add_rat_t(x, &constants.rat_one, precision, ratio, ti);
         _gamma(x, radix, precision, constants)?;
-        *x = mul_rat(x, &fact, precision);
+        *x = mul_rat_t(x, &fact, precision, ratio, ti);
     } else {
         *x = fact;
     }
