@@ -1,0 +1,20 @@
+# Build artifacts
+/target/
+
+# Cargo lock for library crate
+Cargo.lock
+
+# IDE
+.vs/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Submodule build artifacts
+code2port/build/
+code2port/out/

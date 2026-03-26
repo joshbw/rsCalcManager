@@ -1,0 +1,26 @@
+[package]
+name = "calc_manager"
+version = "0.1.0"
+edition = "2024"
+description = "A Rust port of Microsoft's Windows Calculator CalcManager engine"
+license = "MIT"
+repository = "https://github.com/joshbw/rsCalcManager"
+keywords = ["calculator", "math", "arbitrary-precision", "rational"]
+categories = ["mathematics", "science"]
+
+[dependencies]
+
+[dev-dependencies]
+approx = "0.5"
+
+[lints.clippy]
+all = { level = "warn", priority = -1 }
+pedantic = { level = "warn", priority = -1 }
+nursery = { level = "warn", priority = -1 }
+cast_possible_truncation = "allow"
+cast_possible_wrap = "allow"
+cast_sign_loss = "allow"
+cast_precision_loss = "allow"
+module_name_repetitions = "allow"
+must_use_candidate = "allow"
+missing_errors_doc = "allow"
