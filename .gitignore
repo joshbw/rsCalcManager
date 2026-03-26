@@ -18,3 +18,6 @@ Thumbs.db
 # Submodule build artifacts
 code2port/build/
 code2port/out/
+
+# C++ test harness build artifacts
+test/port_harness/build/

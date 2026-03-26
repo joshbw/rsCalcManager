@@ -1,0 +1,252 @@
+[
+  {
+    "id": "and_001",
+    "function": "and_rat",
+    "description": "Bitwise AND: 5 & 3 = 1 (101 & 011 = 001)",
+    "inputs": { "a": "5", "b": "3" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "1", "error": null },
+    "tolerance": null,
+    "tags": ["basic"]
+  },
+  {
+    "id": "and_002",
+    "function": "and_rat",
+    "description": "Bitwise AND: 15 & 8 = 8 (1111 & 1000 = 1000)",
+    "inputs": { "a": "15", "b": "8" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "8", "error": null },
+    "tolerance": null,
+    "tags": ["basic"]
+  },
+  {
+    "id": "and_003",
+    "function": "and_rat",
+    "description": "Bitwise AND with zero: x & 0 = 0",
+    "inputs": { "a": "255", "b": "0" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "0", "error": null },
+    "tolerance": null,
+    "tags": ["basic", "identity"]
+  },
+  {
+    "id": "and_004",
+    "function": "and_rat",
+    "description": "Bitwise AND with self: x & x = x",
+    "inputs": { "a": "42", "b": "42" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "42", "error": null },
+    "tolerance": null,
+    "tags": ["basic", "identity"]
+  },
+  {
+    "id": "and_005",
+    "function": "and_rat",
+    "description": "Bitwise AND: 255 & 170 = 170 (0xFF & 0xAA = 0xAA)",
+    "inputs": { "a": "255", "b": "170" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "170", "error": null },
+    "tolerance": null,
+    "tags": ["basic"]
+  },
+  {
+    "id": "or_001",
+    "function": "or_rat",
+    "description": "Bitwise OR: 5 | 3 = 7 (101 | 011 = 111)",
+    "inputs": { "a": "5", "b": "3" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "7", "error": null },
+    "tolerance": null,
+    "tags": ["basic"]
+  },
+  {
+    "id": "or_002",
+    "function": "or_rat",
+    "description": "Bitwise OR: 12 | 10 = 14 (1100 | 1010 = 1110)",
+    "inputs": { "a": "12", "b": "10" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "14", "error": null },
+    "tolerance": null,
+    "tags": ["basic"]
+  },
+  {
+    "id": "or_003",
+    "function": "or_rat",
+    "description": "Bitwise OR with zero: x | 0 = x",
+    "inputs": { "a": "99", "b": "0" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "99", "error": null },
+    "tolerance": null,
+    "tags": ["basic", "identity"]
+  },
+  {
+    "id": "or_004",
+    "function": "or_rat",
+    "description": "Bitwise OR with self: x | x = x",
+    "inputs": { "a": "42", "b": "42" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "42", "error": null },
+    "tolerance": null,
+    "tags": ["basic", "identity"]
+  },
+  {
+    "id": "xor_001",
+    "function": "xor_rat",
+    "description": "Bitwise XOR: 5 ^ 3 = 6 (101 ^ 011 = 110)",
+    "inputs": { "a": "5", "b": "3" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "6", "error": null },
+    "tolerance": null,
+    "tags": ["basic"]
+  },
+  {
+    "id": "xor_002",
+    "function": "xor_rat",
+    "description": "Bitwise XOR with zero: x ^ 0 = x",
+    "inputs": { "a": "77", "b": "0" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "77", "error": null },
+    "tolerance": null,
+    "tags": ["basic", "identity"]
+  },
+  {
+    "id": "xor_003",
+    "function": "xor_rat",
+    "description": "Bitwise XOR with self: x ^ x = 0",
+    "inputs": { "a": "42", "b": "42" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "0", "error": null },
+    "tolerance": null,
+    "tags": ["basic", "identity"]
+  },
+  {
+    "id": "xor_004",
+    "function": "xor_rat",
+    "description": "Bitwise XOR: 255 ^ 170 = 85 (0xFF ^ 0xAA = 0x55)",
+    "inputs": { "a": "255", "b": "170" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "85", "error": null },
+    "tolerance": null,
+    "tags": ["basic"]
+  },
+  {
+    "id": "lsh_001",
+    "function": "lsh_rat",
+    "description": "Left shift: 1 << 1 = 2",
+    "inputs": { "a": "1", "b": "1" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "2", "error": null },
+    "tolerance": null,
+    "tags": ["basic"]
+  },
+  {
+    "id": "lsh_002",
+    "function": "lsh_rat",
+    "description": "Left shift: 1 << 10 = 1024",
+    "inputs": { "a": "1", "b": "10" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "1024", "error": null },
+    "tolerance": null,
+    "tags": ["basic"]
+  },
+  {
+    "id": "lsh_003",
+    "function": "lsh_rat",
+    "description": "Left shift: 5 << 3 = 40",
+    "inputs": { "a": "5", "b": "3" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "40", "error": null },
+    "tolerance": null,
+    "tags": ["basic"]
+  },
+  {
+    "id": "lsh_004",
+    "function": "lsh_rat",
+    "description": "Left shift zero: 0 << 5 = 0",
+    "inputs": { "a": "0", "b": "5" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "0", "error": null },
+    "tolerance": null,
+    "tags": ["basic", "edge"]
+  },
+  {
+    "id": "rsh_001",
+    "function": "rsh_rat",
+    "description": "Right shift: 10 >> 1 = 5",
+    "inputs": { "a": "10", "b": "1" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "5", "error": null },
+    "tolerance": null,
+    "tags": ["basic"]
+  },
+  {
+    "id": "rsh_002",
+    "function": "rsh_rat",
+    "description": "Right shift: 1024 >> 10 = 1",
+    "inputs": { "a": "1024", "b": "10" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "1", "error": null },
+    "tolerance": null,
+    "tags": ["basic"]
+  },
+  {
+    "id": "rsh_003",
+    "function": "rsh_rat",
+    "description": "Right shift: 8 >> 3 = 1",
+    "inputs": { "a": "8", "b": "3" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "1", "error": null },
+    "tolerance": null,
+    "tags": ["basic"]
+  },
+  {
+    "id": "mod_001",
+    "function": "mod_rat",
+    "description": "Modulo: 7 mod 3 = 1",
+    "inputs": { "a": "7", "b": "3" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "1", "error": null },
+    "tolerance": null,
+    "tags": ["basic"]
+  },
+  {
+    "id": "mod_002",
+    "function": "mod_rat",
+    "description": "Modulo negative: -7 mod 3 = 2 (result has sign of divisor)",
+    "inputs": { "a": "-7", "b": "3" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "2", "error": null },
+    "tolerance": null,
+    "tags": ["basic"]
+  },
+  {
+    "id": "mod_003",
+    "function": "mod_rat",
+    "description": "Modulo exact: 10 mod 5 = 0",
+    "inputs": { "a": "10", "b": "5" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "0", "error": null },
+    "tolerance": null,
+    "tags": ["basic"]
+  },
+  {
+    "id": "mod_004",
+    "function": "mod_rat",
+    "description": "Modulo by zero: x mod 0 = x (implementation-defined)",
+    "inputs": { "a": "7", "b": "0" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "7", "error": null },
+    "tolerance": null,
+    "tags": ["edge"]
+  },
+  {
+    "id": "mod_005",
+    "function": "mod_rat",
+    "description": "Modulo: 17 mod 5 = 2",
+    "inputs": { "a": "17", "b": "5" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "2", "error": null },
+    "tolerance": null,
+    "tags": ["basic"]
+  }
+]

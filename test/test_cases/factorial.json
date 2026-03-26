@@ -1,0 +1,152 @@
+[
+  {
+    "id": "fact_001",
+    "function": "fact_rat",
+    "description": "0! = 1",
+    "inputs": { "n": "0" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "1", "error": null },
+    "tolerance": null,
+    "tags": ["basic", "edge"]
+  },
+  {
+    "id": "fact_002",
+    "function": "fact_rat",
+    "description": "1! = 1",
+    "inputs": { "n": "1" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "1", "error": null },
+    "tolerance": null,
+    "tags": ["basic"]
+  },
+  {
+    "id": "fact_003",
+    "function": "fact_rat",
+    "description": "2! = 2",
+    "inputs": { "n": "2" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "2", "error": null },
+    "tolerance": null,
+    "tags": ["basic"]
+  },
+  {
+    "id": "fact_004",
+    "function": "fact_rat",
+    "description": "3! = 6",
+    "inputs": { "n": "3" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "6", "error": null },
+    "tolerance": null,
+    "tags": ["basic"]
+  },
+  {
+    "id": "fact_005",
+    "function": "fact_rat",
+    "description": "4! = 24",
+    "inputs": { "n": "4" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "24", "error": null },
+    "tolerance": null,
+    "tags": ["basic"]
+  },
+  {
+    "id": "fact_006",
+    "function": "fact_rat",
+    "description": "5! = 120",
+    "inputs": { "n": "5" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "120", "error": null },
+    "tolerance": null,
+    "tags": ["basic"]
+  },
+  {
+    "id": "fact_007",
+    "function": "fact_rat",
+    "description": "10! = 3628800",
+    "inputs": { "n": "10" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "3628800", "error": null },
+    "tolerance": null,
+    "tags": ["basic"]
+  },
+  {
+    "id": "fact_008",
+    "function": "fact_rat",
+    "description": "20! = 2432902008176640000",
+    "inputs": { "n": "20" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "2432902008176640000", "error": null },
+    "tolerance": null,
+    "tags": ["basic", "precision"]
+  },
+  {
+    "id": "fact_009",
+    "function": "fact_rat",
+    "description": "12! = 479001600",
+    "inputs": { "n": "12" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "479001600", "error": null },
+    "tolerance": null,
+    "tags": ["basic"]
+  },
+  {
+    "id": "fact_010",
+    "function": "fact_rat",
+    "description": "0.5! ≈ √π/2 ≈ 0.88622692545275801365",
+    "inputs": { "n": "0.5" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "0.88622692545275801365", "error": null },
+    "tolerance": 1e-20,
+    "tags": ["basic", "precision"]
+  },
+  {
+    "id": "fact_011",
+    "function": "fact_rat",
+    "description": "1.5! ≈ 3√π/4 ≈ 1.32934038817913702047",
+    "inputs": { "n": "1.5" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "1.32934038817913702047", "error": null },
+    "tolerance": 1e-20,
+    "tags": ["basic", "precision"]
+  },
+  {
+    "id": "fact_012",
+    "function": "fact_rat",
+    "description": "(-1)! → Domain error",
+    "inputs": { "n": "-1" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": null, "error": "Domain" },
+    "tolerance": null,
+    "tags": ["error", "edge"]
+  },
+  {
+    "id": "fact_013",
+    "function": "fact_rat",
+    "description": "(-2)! → Domain error",
+    "inputs": { "n": "-2" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": null, "error": "Domain" },
+    "tolerance": null,
+    "tags": ["error", "edge"]
+  },
+  {
+    "id": "fact_014",
+    "function": "fact_rat",
+    "description": "3250! → Overflow error",
+    "inputs": { "n": "3250" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": null, "error": "Overflow" },
+    "tolerance": null,
+    "tags": ["error", "edge"]
+  },
+  {
+    "id": "fact_015",
+    "function": "fact_rat",
+    "description": "6! = 720",
+    "inputs": { "n": "6" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "720", "error": null },
+    "tolerance": null,
+    "tags": ["basic"]
+  }
+]

@@ -1,0 +1,282 @@
+[
+  {
+    "id": "exp_001",
+    "function": "exp_rat",
+    "description": "exp(0) = 1",
+    "inputs": { "x": "0" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "1", "error": null },
+    "tolerance": null,
+    "tags": ["basic", "identity"]
+  },
+  {
+    "id": "exp_002",
+    "function": "exp_rat",
+    "description": "exp(1) ≈ e ≈ 2.71828182845904523536",
+    "inputs": { "x": "1" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "2.71828182845904523536", "error": null },
+    "tolerance": 1e-20,
+    "tags": ["basic", "precision"]
+  },
+  {
+    "id": "exp_003",
+    "function": "exp_rat",
+    "description": "exp(-1) ≈ 0.36787944117144232160",
+    "inputs": { "x": "-1" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "0.36787944117144232160", "error": null },
+    "tolerance": 1e-20,
+    "tags": ["basic", "precision"]
+  },
+  {
+    "id": "exp_004",
+    "function": "exp_rat",
+    "description": "exp(2) ≈ 7.38905609893065022723",
+    "inputs": { "x": "2" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "7.38905609893065022723", "error": null },
+    "tolerance": 1e-20,
+    "tags": ["basic", "precision"]
+  },
+  {
+    "id": "exp_005",
+    "function": "exp_rat",
+    "description": "exp(10) ≈ 22026.4657948067165170",
+    "inputs": { "x": "10" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "22026.4657948067165170", "error": null },
+    "tolerance": 1e-16,
+    "tags": ["basic", "precision"]
+  },
+  {
+    "id": "exp_006",
+    "function": "exp_rat",
+    "description": "exp(very large) → Domain/Overflow error",
+    "inputs": { "x": "200000" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": null, "error": "Overflow" },
+    "tolerance": null,
+    "tags": ["error", "edge"]
+  },
+  {
+    "id": "log_001",
+    "function": "log_rat",
+    "description": "ln(1) = 0",
+    "inputs": { "x": "1" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "0", "error": null },
+    "tolerance": null,
+    "tags": ["basic", "identity"]
+  },
+  {
+    "id": "log_002",
+    "function": "log_rat",
+    "description": "ln(e) ≈ 1",
+    "inputs": { "x": "2.71828182845904523536" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "1", "error": null },
+    "tolerance": 1e-20,
+    "tags": ["basic", "precision"]
+  },
+  {
+    "id": "log_003",
+    "function": "log_rat",
+    "description": "ln(10) ≈ 2.30258509299404568402",
+    "inputs": { "x": "10" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "2.30258509299404568402", "error": null },
+    "tolerance": 1e-20,
+    "tags": ["basic", "precision"]
+  },
+  {
+    "id": "log_004",
+    "function": "log_rat",
+    "description": "ln(2) ≈ 0.69314718055994530942",
+    "inputs": { "x": "2" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "0.69314718055994530942", "error": null },
+    "tolerance": 1e-20,
+    "tags": ["basic", "precision"]
+  },
+  {
+    "id": "log_005",
+    "function": "log_rat",
+    "description": "ln(0) → Domain error",
+    "inputs": { "x": "0" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": null, "error": "Domain" },
+    "tolerance": null,
+    "tags": ["error", "edge"]
+  },
+  {
+    "id": "log_006",
+    "function": "log_rat",
+    "description": "ln(-1) → Domain error",
+    "inputs": { "x": "-1" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": null, "error": "Domain" },
+    "tolerance": null,
+    "tags": ["error", "edge"]
+  },
+  {
+    "id": "log10_001",
+    "function": "log10_rat",
+    "description": "log10(1) = 0",
+    "inputs": { "x": "1" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "0", "error": null },
+    "tolerance": null,
+    "tags": ["basic", "identity"]
+  },
+  {
+    "id": "log10_002",
+    "function": "log10_rat",
+    "description": "log10(10) = 1",
+    "inputs": { "x": "10" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "1", "error": null },
+    "tolerance": 1e-20,
+    "tags": ["basic"]
+  },
+  {
+    "id": "log10_003",
+    "function": "log10_rat",
+    "description": "log10(100) = 2",
+    "inputs": { "x": "100" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "2", "error": null },
+    "tolerance": 1e-20,
+    "tags": ["basic"]
+  },
+  {
+    "id": "log10_004",
+    "function": "log10_rat",
+    "description": "log10(1000) = 3",
+    "inputs": { "x": "1000" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "3", "error": null },
+    "tolerance": 1e-20,
+    "tags": ["basic"]
+  },
+  {
+    "id": "log10_005",
+    "function": "log10_rat",
+    "description": "log10(0) → Domain error",
+    "inputs": { "x": "0" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": null, "error": "Domain" },
+    "tolerance": null,
+    "tags": ["error", "edge"]
+  },
+  {
+    "id": "pow_r_001",
+    "function": "pow_rat",
+    "description": "2^3 = 8",
+    "inputs": { "base": "2", "exp": "3" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "8", "error": null },
+    "tolerance": null,
+    "tags": ["basic"]
+  },
+  {
+    "id": "pow_r_002",
+    "function": "pow_rat",
+    "description": "2^0.5 ≈ sqrt(2) ≈ 1.41421356237309504880",
+    "inputs": { "base": "2", "exp": "0.5" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "1.41421356237309504880", "error": null },
+    "tolerance": 1e-20,
+    "tags": ["basic", "precision"]
+  },
+  {
+    "id": "pow_r_003",
+    "function": "pow_rat",
+    "description": "0^0 = 1 (convention)",
+    "inputs": { "base": "0", "exp": "0" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "1", "error": null },
+    "tolerance": null,
+    "tags": ["edge"]
+  },
+  {
+    "id": "pow_r_004",
+    "function": "pow_rat",
+    "description": "0^5 = 0",
+    "inputs": { "base": "0", "exp": "5" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "0", "error": null },
+    "tolerance": null,
+    "tags": ["edge"]
+  },
+  {
+    "id": "pow_r_005",
+    "function": "pow_rat",
+    "description": "(-2)^3 = -8",
+    "inputs": { "base": "-2", "exp": "3" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "-8", "error": null },
+    "tolerance": null,
+    "tags": ["basic"]
+  },
+  {
+    "id": "root_001",
+    "function": "root_rat",
+    "description": "sqrt(4) = 2",
+    "inputs": { "x": "4", "n": "2" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "2", "error": null },
+    "tolerance": 1e-20,
+    "tags": ["basic"]
+  },
+  {
+    "id": "root_002",
+    "function": "root_rat",
+    "description": "sqrt(2) ≈ 1.41421356237309504880",
+    "inputs": { "x": "2", "n": "2" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "1.41421356237309504880", "error": null },
+    "tolerance": 1e-20,
+    "tags": ["basic", "precision"]
+  },
+  {
+    "id": "root_003",
+    "function": "root_rat",
+    "description": "cbrt(27) = 3",
+    "inputs": { "x": "27", "n": "3" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "3", "error": null },
+    "tolerance": 1e-20,
+    "tags": ["basic"]
+  },
+  {
+    "id": "root_004",
+    "function": "root_rat",
+    "description": "sqrt(0) = 0",
+    "inputs": { "x": "0", "n": "2" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "0", "error": null },
+    "tolerance": null,
+    "tags": ["basic", "edge"]
+  },
+  {
+    "id": "ident_001",
+    "function": "identity_exp_log",
+    "description": "exp(ln(5)) ≈ 5",
+    "inputs": { "x": "5" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "5", "error": null },
+    "tolerance": 1e-20,
+    "tags": ["identity"]
+  },
+  {
+    "id": "ident_002",
+    "function": "identity_log_exp",
+    "description": "ln(exp(3)) ≈ 3",
+    "inputs": { "x": "3" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "3", "error": null },
+    "tolerance": 1e-20,
+    "tags": ["identity"]
+  }
+]

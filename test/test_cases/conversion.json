@@ -1,0 +1,302 @@
+[
+  {
+    "id": "s2n_001",
+    "function": "string_to_number",
+    "description": "Parse '123' in base 10",
+    "inputs": { "s": "123" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "123", "error": null },
+    "tolerance": null,
+    "tags": ["basic"]
+  },
+  {
+    "id": "s2n_002",
+    "function": "string_to_number",
+    "description": "Parse 'FF' in base 16 = 255",
+    "inputs": { "s": "FF" },
+    "params": { "radix": 16, "precision": 128 },
+    "expected": { "result": "255", "error": null },
+    "tolerance": null,
+    "tags": ["basic"]
+  },
+  {
+    "id": "s2n_003",
+    "function": "string_to_number",
+    "description": "Parse '1010' in base 2 = 10",
+    "inputs": { "s": "1010" },
+    "params": { "radix": 2, "precision": 128 },
+    "expected": { "result": "10", "error": null },
+    "tolerance": null,
+    "tags": ["basic"]
+  },
+  {
+    "id": "s2n_004",
+    "function": "string_to_number",
+    "description": "Parse '77' in base 8 = 63",
+    "inputs": { "s": "77" },
+    "params": { "radix": 8, "precision": 128 },
+    "expected": { "result": "63", "error": null },
+    "tolerance": null,
+    "tags": ["basic"]
+  },
+  {
+    "id": "s2n_005",
+    "function": "string_to_number",
+    "description": "Parse '0' in base 10",
+    "inputs": { "s": "0" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "0", "error": null },
+    "tolerance": null,
+    "tags": ["basic", "edge"]
+  },
+  {
+    "id": "s2n_006",
+    "function": "string_to_number",
+    "description": "Parse '-42' in base 10",
+    "inputs": { "s": "-42" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "-42", "error": null },
+    "tolerance": null,
+    "tags": ["basic"]
+  },
+  {
+    "id": "s2n_007",
+    "function": "string_to_number",
+    "description": "Parse '0.0' in base 10",
+    "inputs": { "s": "0.0" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "0", "error": null },
+    "tolerance": null,
+    "tags": ["edge"]
+  },
+  {
+    "id": "s2n_008",
+    "function": "string_to_number",
+    "description": "Parse '3.14' in base 10",
+    "inputs": { "s": "3.14" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "3.14", "error": null },
+    "tolerance": null,
+    "tags": ["basic"]
+  },
+  {
+    "id": "s2n_009",
+    "function": "string_to_number",
+    "description": "Parse '1.5e10' scientific notation in base 10",
+    "inputs": { "s": "1.5e10" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "15000000000", "error": null },
+    "tolerance": null,
+    "tags": ["basic"]
+  },
+  {
+    "id": "s2n_010",
+    "function": "string_to_number",
+    "description": "Parse very large number '99999999999999999999'",
+    "inputs": { "s": "99999999999999999999" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "99999999999999999999", "error": null },
+    "tolerance": null,
+    "tags": ["precision", "edge"]
+  },
+  {
+    "id": "s2r_001",
+    "function": "string_to_rat",
+    "description": "Parse '3.14' to rational",
+    "inputs": { "s": "3.14" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "157/50", "error": null },
+    "tolerance": null,
+    "tags": ["basic"]
+  },
+  {
+    "id": "s2r_002",
+    "function": "string_to_rat",
+    "description": "Parse '0.5' to rational = 1/2",
+    "inputs": { "s": "0.5" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "1/2", "error": null },
+    "tolerance": null,
+    "tags": ["basic"]
+  },
+  {
+    "id": "s2r_003",
+    "function": "string_to_rat",
+    "description": "Parse '100' to rational = 100",
+    "inputs": { "s": "100" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "100", "error": null },
+    "tolerance": null,
+    "tags": ["basic"]
+  },
+  {
+    "id": "s2r_004",
+    "function": "string_to_rat",
+    "description": "Parse '-7' to rational",
+    "inputs": { "s": "-7" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "-7", "error": null },
+    "tolerance": null,
+    "tags": ["basic"]
+  },
+  {
+    "id": "s2r_005",
+    "function": "string_to_rat",
+    "description": "Parse '0.333333333333333333' approximating 1/3",
+    "inputs": { "s": "0.333333333333333333" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "333333333333333333/1000000000000000000", "error": null },
+    "tolerance": null,
+    "tags": ["precision"]
+  },
+  {
+    "id": "r2s_001",
+    "function": "rat_to_string",
+    "description": "Rational 7 to string = '7'",
+    "inputs": { "rat": "7", "format": "Float" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "7", "error": null },
+    "tolerance": null,
+    "tags": ["basic", "roundtrip"]
+  },
+  {
+    "id": "r2s_002",
+    "function": "rat_to_string",
+    "description": "Rational 1/2 to string = '0.5'",
+    "inputs": { "rat": "1/2", "format": "Float" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "0.5", "error": null },
+    "tolerance": null,
+    "tags": ["basic", "roundtrip"]
+  },
+  {
+    "id": "r2s_003",
+    "function": "rat_to_string",
+    "description": "Rational 0 to string = '0'",
+    "inputs": { "rat": "0", "format": "Float" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "0", "error": null },
+    "tolerance": null,
+    "tags": ["basic", "edge"]
+  },
+  {
+    "id": "r2s_004",
+    "function": "rat_to_string",
+    "description": "Rational -42 to string = '-42'",
+    "inputs": { "rat": "-42", "format": "Float" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "-42", "error": null },
+    "tolerance": null,
+    "tags": ["basic"]
+  },
+  {
+    "id": "r2s_005",
+    "function": "rat_to_string",
+    "description": "Large number in scientific notation format",
+    "inputs": { "rat": "15000000000", "format": "Scientific" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "1.5e+10", "error": null },
+    "tolerance": null,
+    "tags": ["basic"]
+  },
+  {
+    "id": "r2s_006",
+    "function": "rat_to_string",
+    "description": "Number in engineering notation format",
+    "inputs": { "rat": "15000", "format": "Engineering" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "15e+3", "error": null },
+    "tolerance": null,
+    "tags": ["basic"]
+  },
+  {
+    "id": "n2r_001",
+    "function": "num_to_radix",
+    "description": "Convert 255 to base 16 representation",
+    "inputs": { "num": "255", "target_radix": 16 },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "FF", "error": null },
+    "tolerance": null,
+    "tags": ["basic", "roundtrip"]
+  },
+  {
+    "id": "n2r_002",
+    "function": "num_to_radix",
+    "description": "Convert 10 to base 2 representation",
+    "inputs": { "num": "10", "target_radix": 2 },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "1010", "error": null },
+    "tolerance": null,
+    "tags": ["basic", "roundtrip"]
+  },
+  {
+    "id": "n2r_003",
+    "function": "num_to_radix",
+    "description": "Convert 63 to base 8 representation",
+    "inputs": { "num": "63", "target_radix": 8 },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "77", "error": null },
+    "tolerance": null,
+    "tags": ["basic", "roundtrip"]
+  },
+  {
+    "id": "nfr_001",
+    "function": "num_from_radix",
+    "description": "Convert FF from base 16 to base 10 = 255",
+    "inputs": { "num": "FF", "source_radix": 16 },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "255", "error": null },
+    "tolerance": null,
+    "tags": ["basic", "roundtrip"]
+  },
+  {
+    "id": "nfr_002",
+    "function": "num_from_radix",
+    "description": "Convert 1010 from base 2 to base 10 = 10",
+    "inputs": { "num": "1010", "source_radix": 2 },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "10", "error": null },
+    "tolerance": null,
+    "tags": ["basic", "roundtrip"]
+  },
+  {
+    "id": "nfr_003",
+    "function": "num_from_radix",
+    "description": "Convert 77 from base 8 to base 10 = 63",
+    "inputs": { "num": "77", "source_radix": 8 },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "63", "error": null },
+    "tolerance": null,
+    "tags": ["basic", "roundtrip"]
+  },
+  {
+    "id": "rt_001",
+    "function": "roundtrip_string",
+    "description": "Roundtrip: '42' → number → string = '42'",
+    "inputs": { "s": "42" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "42", "error": null },
+    "tolerance": null,
+    "tags": ["roundtrip"]
+  },
+  {
+    "id": "rt_002",
+    "function": "roundtrip_string",
+    "description": "Roundtrip: '3.14159' → number → string preserves value",
+    "inputs": { "s": "3.14159" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "3.14159", "error": null },
+    "tolerance": null,
+    "tags": ["roundtrip"]
+  },
+  {
+    "id": "rt_003",
+    "function": "roundtrip_string",
+    "description": "Roundtrip: '-99.001' → number → string preserves value",
+    "inputs": { "s": "-99.001" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "-99.001", "error": null },
+    "tolerance": null,
+    "tags": ["roundtrip"]
+  }
+]

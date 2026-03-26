@@ -1,0 +1,292 @@
+[
+  {
+    "id": "sin_001",
+    "function": "sin_rat",
+    "description": "sin(0) = 0",
+    "inputs": { "x": "0" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "0", "error": null },
+    "tolerance": 1e-20,
+    "tags": ["basic"]
+  },
+  {
+    "id": "sin_002",
+    "function": "sin_rat",
+    "description": "sin(π/6) ≈ 0.5",
+    "inputs": { "x": "0.52359877559829887308" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "0.5", "error": null },
+    "tolerance": 1e-20,
+    "tags": ["basic", "precision"]
+  },
+  {
+    "id": "sin_003",
+    "function": "sin_rat",
+    "description": "sin(π/4) ≈ √2/2 ≈ 0.70710678118654752440",
+    "inputs": { "x": "0.78539816339744830962" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "0.70710678118654752440", "error": null },
+    "tolerance": 1e-20,
+    "tags": ["basic", "precision"]
+  },
+  {
+    "id": "sin_004",
+    "function": "sin_rat",
+    "description": "sin(π/2) ≈ 1",
+    "inputs": { "x": "1.57079632679489661923" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "1", "error": null },
+    "tolerance": 1e-20,
+    "tags": ["basic"]
+  },
+  {
+    "id": "sin_005",
+    "function": "sin_rat",
+    "description": "sin(π) ≈ 0",
+    "inputs": { "x": "3.14159265358979323846" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "0", "error": null },
+    "tolerance": 1e-20,
+    "tags": ["basic"]
+  },
+  {
+    "id": "sin_006",
+    "function": "sin_rat",
+    "description": "sin(3π/2) ≈ -1",
+    "inputs": { "x": "4.71238898038468985769" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "-1", "error": null },
+    "tolerance": 1e-20,
+    "tags": ["basic"]
+  },
+  {
+    "id": "cos_001",
+    "function": "cos_rat",
+    "description": "cos(0) = 1",
+    "inputs": { "x": "0" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "1", "error": null },
+    "tolerance": 1e-20,
+    "tags": ["basic"]
+  },
+  {
+    "id": "cos_002",
+    "function": "cos_rat",
+    "description": "cos(π/6) ≈ √3/2 ≈ 0.86602540378443864676",
+    "inputs": { "x": "0.52359877559829887308" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "0.86602540378443864676", "error": null },
+    "tolerance": 1e-20,
+    "tags": ["basic", "precision"]
+  },
+  {
+    "id": "cos_003",
+    "function": "cos_rat",
+    "description": "cos(π/4) ≈ √2/2 ≈ 0.70710678118654752440",
+    "inputs": { "x": "0.78539816339744830962" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "0.70710678118654752440", "error": null },
+    "tolerance": 1e-20,
+    "tags": ["basic", "precision"]
+  },
+  {
+    "id": "cos_004",
+    "function": "cos_rat",
+    "description": "cos(π/2) ≈ 0",
+    "inputs": { "x": "1.57079632679489661923" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "0", "error": null },
+    "tolerance": 1e-20,
+    "tags": ["basic"]
+  },
+  {
+    "id": "cos_005",
+    "function": "cos_rat",
+    "description": "cos(π) ≈ -1",
+    "inputs": { "x": "3.14159265358979323846" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "-1", "error": null },
+    "tolerance": 1e-20,
+    "tags": ["basic"]
+  },
+  {
+    "id": "tan_001",
+    "function": "tan_rat",
+    "description": "tan(0) = 0",
+    "inputs": { "x": "0" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "0", "error": null },
+    "tolerance": 1e-20,
+    "tags": ["basic"]
+  },
+  {
+    "id": "tan_002",
+    "function": "tan_rat",
+    "description": "tan(π/4) ≈ 1",
+    "inputs": { "x": "0.78539816339744830962" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "1", "error": null },
+    "tolerance": 1e-20,
+    "tags": ["basic"]
+  },
+  {
+    "id": "tan_003",
+    "function": "tan_rat",
+    "description": "tan(π/2) → Domain error (undefined)",
+    "inputs": { "x": "1.57079632679489661923" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": null, "error": "Domain" },
+    "tolerance": null,
+    "tags": ["error", "edge"]
+  },
+  {
+    "id": "sina_001",
+    "function": "sin_angle_rat",
+    "description": "sin(90°) = 1 in degrees",
+    "inputs": { "x": "90", "angle_type": "Degrees" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "1", "error": null },
+    "tolerance": 1e-20,
+    "tags": ["basic"]
+  },
+  {
+    "id": "sina_002",
+    "function": "sin_angle_rat",
+    "description": "sin(180°) ≈ 0 in degrees",
+    "inputs": { "x": "180", "angle_type": "Degrees" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "0", "error": null },
+    "tolerance": 1e-20,
+    "tags": ["basic"]
+  },
+  {
+    "id": "sina_003",
+    "function": "sin_angle_rat",
+    "description": "sin(100 grad) ≈ 1 in gradians",
+    "inputs": { "x": "100", "angle_type": "Gradians" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "1", "error": null },
+    "tolerance": 1e-20,
+    "tags": ["basic"]
+  },
+  {
+    "id": "sina_004",
+    "function": "sin_angle_rat",
+    "description": "sin(30°) = 0.5 in degrees",
+    "inputs": { "x": "30", "angle_type": "Degrees" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "0.5", "error": null },
+    "tolerance": 1e-20,
+    "tags": ["basic"]
+  },
+  {
+    "id": "cosa_001",
+    "function": "cos_angle_rat",
+    "description": "cos(0°) = 1 in degrees",
+    "inputs": { "x": "0", "angle_type": "Degrees" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "1", "error": null },
+    "tolerance": 1e-20,
+    "tags": ["basic"]
+  },
+  {
+    "id": "cosa_002",
+    "function": "cos_angle_rat",
+    "description": "cos(90°) ≈ 0 in degrees",
+    "inputs": { "x": "90", "angle_type": "Degrees" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "0", "error": null },
+    "tolerance": 1e-20,
+    "tags": ["basic"]
+  },
+  {
+    "id": "cosa_003",
+    "function": "cos_angle_rat",
+    "description": "cos(180°) = -1 in degrees",
+    "inputs": { "x": "180", "angle_type": "Degrees" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "-1", "error": null },
+    "tolerance": 1e-20,
+    "tags": ["basic"]
+  },
+  {
+    "id": "tana_001",
+    "function": "tan_angle_rat",
+    "description": "tan(45°) ≈ 1 in degrees",
+    "inputs": { "x": "45", "angle_type": "Degrees" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "1", "error": null },
+    "tolerance": 1e-20,
+    "tags": ["basic"]
+  },
+  {
+    "id": "tana_002",
+    "function": "tan_angle_rat",
+    "description": "tan(90°) → Domain error in degrees",
+    "inputs": { "x": "90", "angle_type": "Degrees" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": null, "error": "Domain" },
+    "tolerance": null,
+    "tags": ["error", "edge"]
+  },
+  {
+    "id": "sinh_001",
+    "function": "sinh_rat",
+    "description": "sinh(0) = 0",
+    "inputs": { "x": "0" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "0", "error": null },
+    "tolerance": 1e-20,
+    "tags": ["basic"]
+  },
+  {
+    "id": "sinh_002",
+    "function": "sinh_rat",
+    "description": "sinh(1) ≈ 1.17520119364380145688",
+    "inputs": { "x": "1" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "1.17520119364380145688", "error": null },
+    "tolerance": 1e-20,
+    "tags": ["basic", "precision"]
+  },
+  {
+    "id": "cosh_001",
+    "function": "cosh_rat",
+    "description": "cosh(0) = 1",
+    "inputs": { "x": "0" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "1", "error": null },
+    "tolerance": 1e-20,
+    "tags": ["basic"]
+  },
+  {
+    "id": "cosh_002",
+    "function": "cosh_rat",
+    "description": "cosh(1) ≈ 1.54308063481524377848",
+    "inputs": { "x": "1" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "1.54308063481524377848", "error": null },
+    "tolerance": 1e-20,
+    "tags": ["basic", "precision"]
+  },
+  {
+    "id": "tanh_001",
+    "function": "tanh_rat",
+    "description": "tanh(0) = 0",
+    "inputs": { "x": "0" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "0", "error": null },
+    "tolerance": 1e-20,
+    "tags": ["basic"]
+  },
+  {
+    "id": "tanh_002",
+    "function": "tanh_rat",
+    "description": "tanh(1) ≈ 0.76159415595576488812",
+    "inputs": { "x": "1" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "0.76159415595576488812", "error": null },
+    "tolerance": 1e-20,
+    "tags": ["basic", "precision"]
+  }
+]

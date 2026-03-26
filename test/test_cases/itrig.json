@@ -1,0 +1,242 @@
+[
+  {
+    "id": "asin_001",
+    "function": "asin_rat",
+    "description": "asin(0) = 0",
+    "inputs": { "x": "0" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "0", "error": null },
+    "tolerance": 1e-20,
+    "tags": ["basic"]
+  },
+  {
+    "id": "asin_002",
+    "function": "asin_rat",
+    "description": "asin(0.5) ≈ π/6 ≈ 0.52359877559829887308",
+    "inputs": { "x": "0.5" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "0.52359877559829887308", "error": null },
+    "tolerance": 1e-20,
+    "tags": ["basic", "precision"]
+  },
+  {
+    "id": "asin_003",
+    "function": "asin_rat",
+    "description": "asin(1) ≈ π/2 ≈ 1.57079632679489661923",
+    "inputs": { "x": "1" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "1.57079632679489661923", "error": null },
+    "tolerance": 1e-20,
+    "tags": ["basic", "precision"]
+  },
+  {
+    "id": "asin_004",
+    "function": "asin_rat",
+    "description": "asin(-1) ≈ -π/2 ≈ -1.57079632679489661923",
+    "inputs": { "x": "-1" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "-1.57079632679489661923", "error": null },
+    "tolerance": 1e-20,
+    "tags": ["basic"]
+  },
+  {
+    "id": "asin_005",
+    "function": "asin_rat",
+    "description": "asin(2) → Domain error (out of [-1,1])",
+    "inputs": { "x": "2" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": null, "error": "Domain" },
+    "tolerance": null,
+    "tags": ["error", "edge"]
+  },
+  {
+    "id": "asin_006",
+    "function": "asin_rat",
+    "description": "asin(-2) → Domain error (out of [-1,1])",
+    "inputs": { "x": "-2" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": null, "error": "Domain" },
+    "tolerance": null,
+    "tags": ["error", "edge"]
+  },
+  {
+    "id": "acos_001",
+    "function": "acos_rat",
+    "description": "acos(1) = 0",
+    "inputs": { "x": "1" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "0", "error": null },
+    "tolerance": 1e-20,
+    "tags": ["basic"]
+  },
+  {
+    "id": "acos_002",
+    "function": "acos_rat",
+    "description": "acos(0.5) ≈ π/3 ≈ 1.04719755119659774616",
+    "inputs": { "x": "0.5" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "1.04719755119659774616", "error": null },
+    "tolerance": 1e-20,
+    "tags": ["basic", "precision"]
+  },
+  {
+    "id": "acos_003",
+    "function": "acos_rat",
+    "description": "acos(0) ≈ π/2 ≈ 1.57079632679489661923",
+    "inputs": { "x": "0" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "1.57079632679489661923", "error": null },
+    "tolerance": 1e-20,
+    "tags": ["basic"]
+  },
+  {
+    "id": "acos_004",
+    "function": "acos_rat",
+    "description": "acos(-1) ≈ π ≈ 3.14159265358979323846",
+    "inputs": { "x": "-1" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "3.14159265358979323846", "error": null },
+    "tolerance": 1e-20,
+    "tags": ["basic"]
+  },
+  {
+    "id": "acos_005",
+    "function": "acos_rat",
+    "description": "acos(2) → Domain error (out of [-1,1])",
+    "inputs": { "x": "2" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": null, "error": "Domain" },
+    "tolerance": null,
+    "tags": ["error", "edge"]
+  },
+  {
+    "id": "atan_001",
+    "function": "atan_rat",
+    "description": "atan(0) = 0",
+    "inputs": { "x": "0" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "0", "error": null },
+    "tolerance": 1e-20,
+    "tags": ["basic"]
+  },
+  {
+    "id": "atan_002",
+    "function": "atan_rat",
+    "description": "atan(1) ≈ π/4 ≈ 0.78539816339744830962",
+    "inputs": { "x": "1" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "0.78539816339744830962", "error": null },
+    "tolerance": 1e-20,
+    "tags": ["basic", "precision"]
+  },
+  {
+    "id": "atan_003",
+    "function": "atan_rat",
+    "description": "atan(-1) ≈ -π/4 ≈ -0.78539816339744830962",
+    "inputs": { "x": "-1" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "-0.78539816339744830962", "error": null },
+    "tolerance": 1e-20,
+    "tags": ["basic"]
+  },
+  {
+    "id": "asina_001",
+    "function": "asin_angle_rat",
+    "description": "asin(1) in degrees = 90",
+    "inputs": { "x": "1", "angle_type": "Degrees" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "90", "error": null },
+    "tolerance": 1e-20,
+    "tags": ["basic"]
+  },
+  {
+    "id": "asina_002",
+    "function": "asin_angle_rat",
+    "description": "asin(0.5) in degrees = 30",
+    "inputs": { "x": "0.5", "angle_type": "Degrees" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "30", "error": null },
+    "tolerance": 1e-20,
+    "tags": ["basic"]
+  },
+  {
+    "id": "acosa_001",
+    "function": "acos_angle_rat",
+    "description": "acos(0) in degrees = 90",
+    "inputs": { "x": "0", "angle_type": "Degrees" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "90", "error": null },
+    "tolerance": 1e-20,
+    "tags": ["basic"]
+  },
+  {
+    "id": "acosa_002",
+    "function": "acos_angle_rat",
+    "description": "acos(1) in degrees = 0",
+    "inputs": { "x": "1", "angle_type": "Degrees" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "0", "error": null },
+    "tolerance": 1e-20,
+    "tags": ["basic"]
+  },
+  {
+    "id": "atana_001",
+    "function": "atan_angle_rat",
+    "description": "atan(1) in degrees = 45",
+    "inputs": { "x": "1", "angle_type": "Degrees" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "45", "error": null },
+    "tolerance": 1e-20,
+    "tags": ["basic"]
+  },
+  {
+    "id": "asinh_001",
+    "function": "asinh_rat",
+    "description": "asinh(0) = 0",
+    "inputs": { "x": "0" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "0", "error": null },
+    "tolerance": 1e-20,
+    "tags": ["basic"]
+  },
+  {
+    "id": "asinh_002",
+    "function": "asinh_rat",
+    "description": "asinh(1) ≈ 0.88137358701954302519",
+    "inputs": { "x": "1" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "0.88137358701954302519", "error": null },
+    "tolerance": 1e-20,
+    "tags": ["basic", "precision"]
+  },
+  {
+    "id": "acosh_001",
+    "function": "acosh_rat",
+    "description": "acosh(1) = 0",
+    "inputs": { "x": "1" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "0", "error": null },
+    "tolerance": 1e-20,
+    "tags": ["basic"]
+  },
+  {
+    "id": "acosh_002",
+    "function": "acosh_rat",
+    "description": "acosh(2) ≈ 1.31695789692481670863",
+    "inputs": { "x": "2" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "1.31695789692481670863", "error": null },
+    "tolerance": 1e-20,
+    "tags": ["basic", "precision"]
+  },
+  {
+    "id": "acosh_003",
+    "function": "acosh_rat",
+    "description": "acosh(0.5) → Domain error (x must be >= 1)",
+    "inputs": { "x": "0.5" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": null, "error": "Domain" },
+    "tolerance": null,
+    "tags": ["error", "edge"]
+  }
+]

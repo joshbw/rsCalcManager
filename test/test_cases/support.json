@@ -1,0 +1,162 @@
+[
+  {
+    "id": "int_001",
+    "function": "int_rat",
+    "description": "Integer part of 5/2 = 2",
+    "inputs": { "x": "5/2" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "2", "error": null },
+    "tolerance": null,
+    "tags": ["basic"]
+  },
+  {
+    "id": "int_002",
+    "function": "int_rat",
+    "description": "Integer part of -5/2 = -2",
+    "inputs": { "x": "-5/2" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "-2", "error": null },
+    "tolerance": null,
+    "tags": ["basic"]
+  },
+  {
+    "id": "int_003",
+    "function": "int_rat",
+    "description": "Integer part of whole number 7 = 7",
+    "inputs": { "x": "7" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "7", "error": null },
+    "tolerance": null,
+    "tags": ["basic"]
+  },
+  {
+    "id": "int_004",
+    "function": "int_rat",
+    "description": "Integer part of 0.9 = 0",
+    "inputs": { "x": "9/10" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "0", "error": null },
+    "tolerance": null,
+    "tags": ["basic"]
+  },
+  {
+    "id": "int_005",
+    "function": "int_rat",
+    "description": "Integer part of 0 = 0",
+    "inputs": { "x": "0" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "0", "error": null },
+    "tolerance": null,
+    "tags": ["basic", "edge"]
+  },
+  {
+    "id": "frac_001",
+    "function": "frac_rat",
+    "description": "Fractional part of 5/2 = 1/2",
+    "inputs": { "x": "5/2" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "1/2", "error": null },
+    "tolerance": null,
+    "tags": ["basic"]
+  },
+  {
+    "id": "frac_002",
+    "function": "frac_rat",
+    "description": "Fractional part of whole number 7 = 0",
+    "inputs": { "x": "7" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "0", "error": null },
+    "tolerance": null,
+    "tags": ["basic"]
+  },
+  {
+    "id": "frac_003",
+    "function": "frac_rat",
+    "description": "Fractional part of -5/2 = -1/2",
+    "inputs": { "x": "-5/2" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "-1/2", "error": null },
+    "tolerance": null,
+    "tags": ["basic"]
+  },
+  {
+    "id": "frac_004",
+    "function": "frac_rat",
+    "description": "Fractional part of 0 = 0",
+    "inputs": { "x": "0" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "0", "error": null },
+    "tolerance": null,
+    "tags": ["basic", "edge"]
+  },
+  {
+    "id": "gcd_001",
+    "function": "gcd_rat",
+    "description": "GCD reduces 6/4 → 3/2",
+    "inputs": { "x": "6/4" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "3/2", "error": null },
+    "tolerance": null,
+    "tags": ["basic"]
+  },
+  {
+    "id": "gcd_002",
+    "function": "gcd_rat",
+    "description": "GCD reduces 15/10 → 3/2",
+    "inputs": { "x": "15/10" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "3/2", "error": null },
+    "tolerance": null,
+    "tags": ["basic"]
+  },
+  {
+    "id": "gcd_003",
+    "function": "gcd_rat",
+    "description": "GCD of coprime 7/9 stays 7/9",
+    "inputs": { "x": "7/9" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "7/9", "error": null },
+    "tolerance": null,
+    "tags": ["basic"]
+  },
+  {
+    "id": "ident_int_frac_001",
+    "function": "identity_int_frac",
+    "description": "int(x) + frac(x) = x for x = 7/3",
+    "inputs": { "x": "7/3" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "7/3", "error": null },
+    "tolerance": null,
+    "tags": ["identity"]
+  },
+  {
+    "id": "ident_int_frac_002",
+    "function": "identity_int_frac",
+    "description": "int(x) + frac(x) = x for x = -11/4",
+    "inputs": { "x": "-11/4" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "-11/4", "error": null },
+    "tolerance": null,
+    "tags": ["identity"]
+  },
+  {
+    "id": "inbetween_001",
+    "function": "in_between",
+    "description": "Clamp 15 to range [-10, 10] = 10",
+    "inputs": { "x": "15", "lo": "-10", "hi": "10" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "10", "error": null },
+    "tolerance": null,
+    "tags": ["basic"]
+  },
+  {
+    "id": "inbetween_002",
+    "function": "in_between",
+    "description": "Value 3 within range [-10, 10] stays 3",
+    "inputs": { "x": "3", "lo": "-10", "hi": "10" },
+    "params": { "radix": 10, "precision": 128 },
+    "expected": { "result": "3", "error": null },
+    "tolerance": null,
+    "tags": ["basic"]
+  }
+]

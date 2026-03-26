@@ -1,0 +1,16 @@
+{"id":"int_001","function":"int_rat","result":"2","error":null}
+{"id":"int_002","function":"int_rat","result":"-2","error":null}
+{"id":"int_003","function":"int_rat","result":"7","error":null}
+{"id":"int_004","function":"int_rat","result":"0","error":null}
+{"id":"int_005","function":"int_rat","result":"0","error":null}
+{"id":"frac_001","function":"frac_rat","result":"0.5","error":null}
+{"id":"frac_002","function":"frac_rat","result":"0","error":null}
+{"id":"frac_003","function":"frac_rat","result":"-0.5","error":null}
+{"id":"frac_004","function":"frac_rat","result":"0","error":null}
+{"id":"gcd_001","function":"gcd_rat","result":"1.5","error":null}
+{"id":"gcd_002","function":"gcd_rat","result":"1.5","error":null}
+{"id":"gcd_003","function":"gcd_rat","result":"0.77777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777778","error":null}
+{"id":"ident_int_frac_001","function":"identity_int_frac","result":null,"error":"UNKNOWN_FUNCTION"}
+{"id":"ident_int_frac_002","function":"identity_int_frac","result":null,"error":"UNKNOWN_FUNCTION"}
+{"id":"inbetween_001","function":"in_between","result":null,"error":"UNKNOWN_FUNCTION"}
+{"id":"inbetween_002","function":"in_between","result":null,"error":"UNKNOWN_FUNCTION"}
