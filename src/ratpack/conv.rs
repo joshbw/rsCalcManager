@@ -14,8 +14,8 @@ use super::{Number, Rational};
 /// Maximum leading zeros after decimal before switching to scientific notation.
 const MAX_ZEROS_AFTER_DECIMAL: i32 = 2;
 
-/// Digit characters for bases 2..64.
-const DIGITS: &[u8] = b"0123456789ABCDEF";
+/// Digit characters for bases 2..64 (matching C++ DIGITS table).
+const DIGITS: &[u8] = b"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_@";
 
 /// Default decimal separator.
 const DECIMAL_SEPARATOR: char = '.';
@@ -75,15 +75,9 @@ const fn normalize_char_digit(c: char, radix: u32) -> char {
     }
 }
 
-/// Look up a character's digit value.
+/// Look up a character's digit value in the DIGITS table.
 fn digit_value(c: char) -> Option<u32> {
-    let c = c as u8;
-    match c {
-        b'0'..=b'9' => Some(u32::from(c - b'0')),
-        b'A'..=b'F' => Some(u32::from(c - b'A' + 10)),
-        b'a'..=b'f' => Some(u32::from(c - b'a' + 10)),
-        _ => None,
-    }
+    DIGITS.iter().position(|&d| d == c as u8).map(|p| p as u32)
 }
 
 // ---------------------------------------------------------------------------
@@ -124,6 +118,13 @@ pub fn string_to_number(s: &str, radix: u32, precision: i32) -> CalcResult<Numbe
 
     if state == DZ || state == EXPDZ {
         return Ok(Number::zero());
+    }
+
+    // Reject invalid final states (incomplete exponent, error, etc.)
+    if state == ERR || state == MANTS || state == EXPB || state == EXPS
+        || state == EXPBZ || state == EXPSZ
+    {
+        return Err(CalcError::NoResult);
     }
 
     while ps.cdigit < len {
@@ -240,6 +241,10 @@ fn store_mantissa_digit(
 /// Strip trailing zeros from a Number's mantissa (least significant end).
 /// Port of C++ `stripzeroesnum`.
 fn strip_zeroes(num: &mut Number, starting: i32) {
+    // If starting is negative, don't strip anything (matches C++ signed comparison).
+    if starting <= 0 {
+        return;
+    }
     let cdigit = num.mantissa.len();
     let limit = if cdigit > starting as usize {
         starting as usize
@@ -345,6 +350,15 @@ fn div_rat_simple(a: &Rational, b: &Rational) -> CalcResult<Rational> {
 // NumberToString
 // ---------------------------------------------------------------------------
 
+/// Result of rounding: either the rounded number is ready, or it needs
+/// reformatting (structure changed after zero-stripping).
+enum RoundResult {
+    /// Number is ready for formatting.
+    Ready(Number),
+    /// Number changed structure; recurse with this number + old format.
+    NeedsReformat(Number),
+}
+
 /// Convert a Number (in a given radix) to a string representation.
 ///
 /// Port of C++ `NumberToString`.
@@ -368,21 +382,18 @@ pub fn number_to_string(
     let length = pnum.cdigit().min(precision);
 
     // Apply rounding if needed.
-    if let Ok(rounded) = apply_rounding(pnum, &mut format, radix, precision, length, exponent_raw)
-    {
-        pnum = rounded;
-    } else {
-        // Rounding changed structure; recurse with original format.
-        let mut retry = num.clone();
-        strip_zeroes(&mut retry, precision + 2);
-        return number_to_string(&retry, old_format, radix, precision);
+    match apply_rounding(pnum, &mut format, radix, precision, length, exponent_raw)? {
+        RoundResult::Ready(rounded) => pnum = rounded,
+        RoundResult::NeedsReformat(rounded) => {
+            // C++ recurses with the modified (rounded) pnum and the old format.
+            return number_to_string(&rounded, old_format, radix, precision);
+        }
     }
 
     Ok(format_number(&pnum, format, radix, precision))
 }
 
 /// Apply rounding to a number before formatting.
-/// Returns the (possibly modified) number.
 fn apply_rounding(
     mut pnum: Number,
     format: &mut NumberFormat,
@@ -390,14 +401,14 @@ fn apply_rounding(
     precision: i32,
     mut length: i32,
     exponent: i32,
-) -> CalcResult<Number> {
+) -> CalcResult<RoundResult> {
     let need_round = !pnum.is_zero()
         && (pnum.cdigit() >= precision
             || (length - exponent > precision && exponent >= -MAX_ZEROS_AFTER_DECIMAL));
 
     if !need_round {
         strip_zeroes(&mut pnum, precision);
-        return Ok(pnum);
+        return Ok(RoundResult::Ready(pnum));
     }
 
     let mut round = Number::from_i32(radix as i32, radix);
@@ -428,11 +439,11 @@ fn apply_rounding(
 
     let offset = (pnum.cdigit() + pnum.exp) - (round.cdigit() + round.exp);
     if strip_zeroes_check(&mut pnum, offset) {
-        // Rounding changed structure significantly; signal caller to recurse.
-        return Err(CalcError::NoResult);
+        // Rounding changed structure; return the rounded number for re-formatting.
+        return Ok(RoundResult::NeedsReformat(pnum));
     }
 
-    Ok(pnum)
+    Ok(RoundResult::Ready(pnum))
 }
 
 /// Build the formatted string from a rounded Number.
