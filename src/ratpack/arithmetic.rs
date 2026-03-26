@@ -723,7 +723,7 @@ pub fn div_rat(a: &Rational, b: &Rational, _precision: i32) -> CalcResult<Ration
 /// Port of C++ `remrat`.
 pub fn rem_rat(a: &Rational, b: &Rational) -> CalcResult<Rational> {
     if b.p().is_zero() {
-        return Err(CalcError::DivideByZero);
+        return Err(CalcError::Indefinite);
     }
 
     // For integer rationals: (a.p * b.q) % (b.p * a.q) / (a.q * b.q)

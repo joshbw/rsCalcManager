@@ -496,12 +496,13 @@ fn format_number(pnum: &Number, format: NumberFormat, radix: u32, precision: i32
         }
     }
 
-    if use_sci_form {
-        append_exponent(&mut result, eout, radix);
-    }
-
+    // Strip trailing decimal separator before adding exponent
     if result.ends_with(DECIMAL_SEPARATOR) {
         result.pop();
+    }
+
+    if use_sci_form {
+        append_exponent(&mut result, eout, radix);
     }
 
     result
