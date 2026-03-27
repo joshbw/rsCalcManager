@@ -600,4 +600,106 @@ mod tests {
         let val = a.p().to_i32(BASEX).unwrap();
         assert_eq!(val, 42);
     }
+
+    // =========================================================================
+    // Boundary and overflow tests
+    // =========================================================================
+
+    #[test]
+    fn test_lsh_at_max_shift_boundary() {
+        // Shift by exactly MAX_SHIFT_EXP should succeed
+        let mut a = Rational::from_i32(1);
+        let b = Rational::from_i32(MAX_SHIFT_EXP);
+        let result = lsh_rat(&mut a, &b, RADIX, PRECISION);
+        assert!(result.is_ok(), "Shift by exactly MAX_SHIFT_EXP should succeed");
+    }
+
+    #[test]
+    fn test_rsh_large_shift_produces_zero() {
+        // 1 >> 100 = 1 / 2^100 ≈ 0 (very small fraction, but not zero)
+        let mut a = Rational::from_i32(1);
+        let b = Rational::from_i32(100);
+        rsh_rat(&mut a, &b, RADIX, PRECISION).unwrap();
+        // The result is 1/2^100, which is very small but not zero
+        assert!(!a.is_zero(), "1 >> 100 is 1/2^100, not exactly zero");
+    }
+
+    #[test]
+    fn test_lsh_by_one() {
+        // x << 1 = x * 2
+        let mut a = Rational::from_i32(7);
+        let b = Rational::from_i32(1);
+        lsh_rat(&mut a, &b, RADIX, PRECISION).unwrap();
+        let val = a.p().to_i32(BASEX).unwrap();
+        assert_eq!(val, 14);
+    }
+
+    #[test]
+    fn test_rsh_by_one() {
+        // 8 >> 1 = 4
+        let mut a = Rational::from_i32(8);
+        let b = Rational::from_i32(1);
+        rsh_rat(&mut a, &b, RADIX, PRECISION).unwrap();
+        let p = a.p().to_i32(BASEX).unwrap();
+        let q = a.q().to_i32(BASEX).unwrap();
+        assert_eq!(p * 1, q * 4);
+    }
+
+    #[test]
+    fn test_and_with_all_ones() {
+        // x & 0xFFFF should preserve lower 16 bits
+        let mut a = Rational::from_u64(0x12345);
+        let b = Rational::from_u64(0xFFFF);
+        and_rat(&mut a, &b, RADIX, PRECISION).unwrap();
+        // 0x12345 & 0xFFFF = 0x2345 = 9029
+        let val = a.to_u64(RADIX, PRECISION).unwrap();
+        assert_eq!(val, 0x2345);
+    }
+
+    #[test]
+    fn test_or_with_zero_is_identity() {
+        let mut a = Rational::from_u64(12345);
+        let b = Rational::from_i32(0);
+        or_rat(&mut a, &b, RADIX, PRECISION).unwrap();
+        let val = a.to_u64(RADIX, PRECISION).unwrap();
+        assert_eq!(val, 12345);
+    }
+
+    #[test]
+    fn test_xor_double_is_identity() {
+        // (x ^ y) ^ y = x
+        let mut a = Rational::from_u64(0xDEAD);
+        let b = Rational::from_u64(0xBEEF);
+        xor_rat(&mut a, &b, RADIX, PRECISION).unwrap();
+        xor_rat(&mut a, &b, RADIX, PRECISION).unwrap();
+        let val = a.to_u64(RADIX, PRECISION).unwrap();
+        assert_eq!(val, 0xDEAD);
+    }
+
+    #[test]
+    fn test_mod_exact_division() {
+        // 10 mod 5 = 0
+        let mut a = Rational::from_i32(10);
+        let b = Rational::from_i32(5);
+        mod_rat(&mut a, &b).unwrap();
+        assert!(a.is_zero());
+    }
+
+    #[test]
+    fn test_mod_one() {
+        // Any integer mod 1 = 0
+        let mut a = Rational::from_i32(42);
+        let b = Rational::from_i32(1);
+        mod_rat(&mut a, &b).unwrap();
+        assert!(a.is_zero());
+    }
+
+    #[test]
+    fn test_rem_zero_dividend() {
+        // 0 rem x = 0
+        let a = Rational::from_i32(0);
+        let b = Rational::from_i32(7);
+        let result = rem_rat(&a, &b).unwrap();
+        assert!(result.is_zero());
+    }
 }

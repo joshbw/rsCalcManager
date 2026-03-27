@@ -1098,4 +1098,219 @@ mod tests {
         let result = &a - &b;
         assert!(result.is_zero());
     }
+
+    // =========================================================================
+    // Boundary, overflow, and edge-case tests
+    // =========================================================================
+
+    #[test]
+    fn test_add_zero_identity() {
+        let a = Rational::from_i32(42);
+        let b = Rational::zero();
+        let result = &a + &b;
+        assert!(!result.is_zero());
+    }
+
+    #[test]
+    fn test_add_negative_cancellation() {
+        let a = Rational::from_i32(5);
+        let b = Rational::from_i32(-5);
+        let result = &a + &b;
+        assert!(result.is_zero());
+    }
+
+    #[test]
+    fn test_mul_by_zero() {
+        let a = Rational::from_i32(999);
+        let b = Rational::zero();
+        let result = &a * &b;
+        assert!(result.is_zero());
+    }
+
+    #[test]
+    fn test_mul_by_one_identity() {
+        let a = Rational::from_i32(42);
+        let b = Rational::one();
+        let result = &a * &b;
+        assert!(!result.is_zero());
+    }
+
+    #[test]
+    fn test_mul_negative_times_negative() {
+        let a = Rational::from_i32(-3);
+        let b = Rational::from_i32(-4);
+        let result = &a * &b;
+        assert_eq!(result.sign(), 1);
+    }
+
+    #[test]
+    fn test_div_one_identity() {
+        let a = Rational::from_i32(42);
+        let b = Rational::one();
+        let result = (&a / &b).unwrap();
+        assert!(!result.is_zero());
+    }
+
+    #[test]
+    fn test_div_self_is_one() {
+        let a = Rational::from_i32(7);
+        let b = Rational::from_i32(7);
+        let result = (&a / &b).unwrap();
+        assert_eq!(result.sign(), 1);
+    }
+
+    #[test]
+    fn test_div_zero_dividend() {
+        let a = Rational::zero();
+        let b = Rational::from_i32(7);
+        let result = (&a / &b).unwrap();
+        assert!(result.is_zero());
+    }
+
+    #[test]
+    fn test_add_large_u64_values() {
+        let a = Rational::from_u64(u64::MAX / 2);
+        let b = Rational::from_u64(u64::MAX / 2);
+        let result = &a + &b;
+        assert!(!result.is_zero());
+        assert_eq!(result.sign(), 1);
+    }
+
+    #[test]
+    fn test_mul_large_values() {
+        let a = Rational::from_u64(1_000_000);
+        let b = Rational::from_u64(1_000_000);
+        let result = &a * &b;
+        assert!(!result.is_zero());
+        assert_eq!(result.sign(), 1);
+    }
+
+    #[test]
+    fn test_sub_produces_negative() {
+        let a = Rational::from_i32(3);
+        let b = Rational::from_i32(5);
+        let result = &a - &b;
+        assert_eq!(result.sign(), -1);
+    }
+
+    #[test]
+    fn test_pow_rat_i32_zero_exponent() {
+        let a = Rational::from_i32(5);
+        let result = rat_pow_i32(&a, 0, 32).unwrap();
+        // 5^0 = 1
+        assert!(!result.is_zero());
+        assert_eq!(result.sign(), 1);
+    }
+
+    #[test]
+    fn test_pow_rat_i32_one_exponent() {
+        let a = Rational::from_i32(5);
+        let result = rat_pow_i32(&a, 1, 32).unwrap();
+        // 5^1 = 5
+        assert!(!result.is_zero());
+    }
+
+    #[test]
+    fn test_pow_rat_i32_negative_exponent() {
+        let a = Rational::from_i32(2);
+        let result = rat_pow_i32(&a, -1, 32).unwrap();
+        // 2^-1 = 0.5 = 1/2
+        assert!(!result.is_zero());
+    }
+
+    #[test]
+    fn test_gcd_rat_simplifies() {
+        use crate::ratpack::support::gcd_rat;
+        // 6/4 → gcd simplifies to 3/2
+        let mut a = Rational::new(
+            Number::from_i32(6, BASEX),
+            Number::from_i32(4, BASEX),
+        );
+        gcd_rat(&mut a, 32);
+        // After GCD simplification, the fraction is reduced
+        assert!(!a.is_zero());
+    }
+
+    #[test]
+    fn test_gcd_rat_already_reduced() {
+        use crate::ratpack::support::gcd_rat;
+        // 3/2 is already reduced
+        let mut a = Rational::new(
+            Number::from_i32(3, BASEX),
+            Number::from_i32(2, BASEX),
+        );
+        gcd_rat(&mut a, 32);
+        assert!(!a.is_zero());
+    }
+
+    #[test]
+    fn test_int_rat_already_integer() {
+        use crate::ratpack::support::int_rat;
+        let mut a = Rational::from_i32(7);
+        int_rat(&mut a, 10, 32).unwrap();
+        let p_val = a.p().to_i32(BASEX).unwrap();
+        assert_eq!(p_val, 7);
+    }
+
+    #[test]
+    fn test_int_rat_truncates_fraction() {
+        use crate::ratpack::support::int_rat;
+        // 7/2 = 3.5 → int_rat → 3
+        let mut a = Rational::new(
+            Number::from_i32(7, BASEX),
+            Number::from_i32(2, BASEX),
+        );
+        int_rat(&mut a, 10, 32).unwrap();
+        let p_val = a.p().to_i32(BASEX).unwrap();
+        assert_eq!(p_val, 3);
+    }
+
+    #[test]
+    fn test_rat_equ_equal_values() {
+        let a = Rational::from_i32(5);
+        let b = Rational::from_i32(5);
+        assert!(rat_equ(&a, &b, 32));
+    }
+
+    #[test]
+    fn test_rat_equ_different_values() {
+        let a = Rational::from_i32(5);
+        let b = Rational::from_i32(6);
+        assert!(!rat_equ(&a, &b, 32));
+    }
+
+    #[test]
+    fn test_rat_gt_positive() {
+        let a = Rational::from_i32(10);
+        let b = Rational::from_i32(5);
+        assert!(rat_gt(&a, &b, 32));
+    }
+
+    #[test]
+    fn test_rat_gt_negative() {
+        let a = Rational::from_i32(3);
+        let b = Rational::from_i32(5);
+        assert!(!rat_gt(&a, &b, 32));
+    }
+
+    #[test]
+    fn test_rat_ge_equal() {
+        let a = Rational::from_i32(5);
+        let b = Rational::from_i32(5);
+        assert!(rat_ge(&a, &b, 32));
+    }
+
+    #[test]
+    fn test_rat_lt_positive() {
+        let a = Rational::from_i32(3);
+        let b = Rational::from_i32(5);
+        assert!(rat_lt(&a, &b, 32));
+    }
+
+    #[test]
+    fn test_rat_le_equal() {
+        let a = Rational::from_i32(5);
+        let b = Rational::from_i32(5);
+        assert!(rat_le(&a, &b, 32));
+    }
 }

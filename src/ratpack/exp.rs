@@ -1146,4 +1146,203 @@ mod tests {
         // It's also acceptable if the current implementation returns a domain error
         // for negative bases with fractional exponents, depending on the path taken
     }
+
+    // =========================================================================
+    // Boundary, overflow, and domain-error tests
+    // =========================================================================
+
+    #[test]
+    fn test_boundary_exp_zero() {
+        let c = make_constants();
+        let mut x = Rational::zero();
+        exp_rat(&mut x, 10, 128, &c).unwrap();
+        let val = rat_to_f64(&x);
+        assert!((val - 1.0).abs() < 1e-10, "exp(0) should be 1, got {val}");
+    }
+
+    #[test]
+    fn test_boundary_exp_one() {
+        let c = make_constants();
+        let mut x = Rational::one();
+        exp_rat(&mut x, 10, 128, &c).unwrap();
+        let val = rat_to_f64(&x);
+        assert!(
+            (val - std::f64::consts::E).abs() < 0.001,
+            "exp(1) should be ≈ 2.71828, got {val}"
+        );
+    }
+
+    #[test]
+    fn test_exp_negative() {
+        let c = make_constants();
+        let mut x = Rational::from_i32(-1);
+        exp_rat(&mut x, 10, 128, &c).unwrap();
+        let val = rat_to_f64(&x);
+        assert!(
+            (val - 1.0 / std::f64::consts::E).abs() < 0.001,
+            "exp(-1) should be ≈ 0.36788, got {val}"
+        );
+    }
+
+    #[test]
+    fn test_boundary_log_one() {
+        let c = make_constants();
+        let mut x = Rational::one();
+        log_rat(&mut x, 128, &c).unwrap();
+        let val = rat_to_f64(&x);
+        assert!(val.abs() < 1e-10, "log(1) should be 0, got {val}");
+    }
+
+    #[test]
+    fn test_log_zero_errors() {
+        let c = make_constants();
+        let mut x = Rational::zero();
+        let result = log_rat(&mut x, 128, &c);
+        assert!(result.is_err(), "log(0) should be an error");
+    }
+
+    #[test]
+    fn test_log_negative_errors() {
+        let c = make_constants();
+        let mut x = Rational::from_i32(-5);
+        let result = log_rat(&mut x, 128, &c);
+        assert!(result.is_err(), "log(negative) should be an error");
+    }
+
+    #[test]
+    fn test_log10_of_100() {
+        let c = make_constants();
+        let mut x = Rational::from_i32(100);
+        log10_rat(&mut x, 128, &c).unwrap();
+        let val = rat_to_f64(&x);
+        assert!(
+            (val - 2.0).abs() < 0.001,
+            "log10(100) should be 2, got {val}"
+        );
+    }
+
+    #[test]
+    fn test_log10_zero_errors() {
+        let c = make_constants();
+        let mut x = Rational::zero();
+        let result = log10_rat(&mut x, 128, &c);
+        assert!(result.is_err(), "log10(0) should be an error");
+    }
+
+    #[test]
+    fn test_pow_zero_base_positive_exp() {
+        let c = make_constants();
+        let mut x = Rational::zero();
+        let y = Rational::from_i32(5);
+        pow_rat(&mut x, &y, 10, 128, &c).unwrap();
+        assert!(x.is_zero(), "0^5 should be 0");
+    }
+
+    #[test]
+    fn test_pow_any_to_zero() {
+        let c = make_constants();
+        let mut x = Rational::from_i32(7);
+        let y = Rational::zero();
+        pow_rat(&mut x, &y, 10, 128, &c).unwrap();
+        let val = rat_to_f64(&x);
+        assert!(
+            (val - 1.0).abs() < 1e-10,
+            "7^0 should be 1, got {val}"
+        );
+    }
+
+    #[test]
+    fn test_pow_one_to_anything() {
+        let c = make_constants();
+        let mut x = Rational::one();
+        let y = Rational::from_i32(999);
+        pow_rat(&mut x, &y, 10, 128, &c).unwrap();
+        let val = rat_to_f64(&x);
+        assert!(
+            (val - 1.0).abs() < 1e-10,
+            "1^999 should be 1, got {val}"
+        );
+    }
+
+    #[test]
+    fn test_pow_negative_integer_exponent() {
+        let c = make_constants();
+        let mut x = Rational::from_i32(2);
+        let y = Rational::from_i32(-3);
+        pow_rat(&mut x, &y, 10, 128, &c).unwrap();
+        let val = rat_to_f64(&x);
+        assert!(
+            (val - 0.125).abs() < 0.001,
+            "2^-3 should be 0.125, got {val}"
+        );
+    }
+
+    #[test]
+    fn test_factorial_zero() {
+        use crate::ratpack::fact::fact_rat;
+        let c = make_constants();
+        let mut x = Rational::zero();
+        fact_rat(&mut x, 10, 32, &c).unwrap();
+        let val = rat_to_f64(&x);
+        assert!((val - 1.0).abs() < 1e-10, "0! should be 1, got {val}");
+    }
+
+    #[test]
+    fn test_factorial_one() {
+        use crate::ratpack::fact::fact_rat;
+        let c = make_constants();
+        let mut x = Rational::one();
+        fact_rat(&mut x, 10, 32, &c).unwrap();
+        let val = rat_to_f64(&x);
+        assert!((val - 1.0).abs() < 1e-10, "1! should be 1, got {val}");
+    }
+
+    #[test]
+    fn test_factorial_negative_errors() {
+        use crate::ratpack::fact::fact_rat;
+        let c = make_constants();
+        let mut x = Rational::from_i32(-3);
+        let result = fact_rat(&mut x, 10, 32, &c);
+        assert!(result.is_err(), "(-3)! should be an error");
+    }
+
+    #[test]
+    fn test_factorial_non_integer_truncates() {
+        use crate::ratpack::fact::fact_rat;
+        let c = make_constants();
+        // 2.5 is truncated to 2 by fact_rat → 2! = 2
+        let mut x = Rational::new(
+            Number::from_i32(5, BASEX),
+            Number::from_i32(2, BASEX),
+        );
+        let result = fact_rat(&mut x, 10, 32, &c);
+        // Implementation truncates to integer first, so this succeeds
+        assert!(result.is_ok(), "2.5 truncated to 2, so 2! should succeed");
+    }
+
+    #[test]
+    fn test_boundary_exp_log_roundtrip() {
+        let c = make_constants();
+        let mut x = Rational::from_i32(5);
+        log_rat(&mut x, 128, &c).unwrap();
+        exp_rat(&mut x, 10, 128, &c).unwrap();
+        let val = rat_to_f64(&x);
+        assert!(
+            (val - 5.0).abs() < 0.01,
+            "exp(log(5)) should be 5, got {val}"
+        );
+    }
+
+    #[test]
+    fn test_pow_square() {
+        let c = make_constants();
+        let mut x = Rational::from_i32(7);
+        let two = Rational::from_i32(2);
+        pow_rat(&mut x, &two, 10, 128, &c).unwrap();
+        let val = rat_to_f64(&x);
+        assert!(
+            (val - 49.0).abs() < 0.01,
+            "7^2 should be 49, got {val}"
+        );
+    }
 }

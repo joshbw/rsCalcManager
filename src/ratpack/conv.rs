@@ -792,4 +792,222 @@ mod tests {
         let flat = flat_rat(&r, 10, 32).unwrap();
         assert!(!flat.is_zero());
     }
+
+    // =========================================================================
+    // Boundary, overflow, and error-path tests
+    // =========================================================================
+
+    // --- string_to_number edge cases ---
+
+    #[test]
+    fn test_string_to_number_empty() {
+        let result = string_to_number("", 10, 32);
+        assert!(result.is_err(), "Empty string should produce an error");
+    }
+
+    #[test]
+    fn test_string_to_number_just_decimal_point() {
+        // A bare "." has no digits — should handle gracefully
+        let result = string_to_number(".", 10, 32);
+        // Either parses as zero or errors; both are acceptable
+        match result {
+            Ok(n) => assert!(n.is_zero() || n.to_i32(10) == Some(0)),
+            Err(_) => {} // error is also acceptable
+        }
+    }
+
+    #[test]
+    fn test_string_to_number_just_sign() {
+        let result = string_to_number("-", 10, 32);
+        assert!(result.is_err(), "Bare sign should produce an error");
+    }
+
+    #[test]
+    fn test_string_to_number_invalid_digit_for_radix() {
+        // 'G' is not a valid hex digit (valid hex: 0-9, A-F)
+        let result = string_to_number("G", 16, 32);
+        assert!(result.is_err(), "Invalid hex digit should produce an error");
+    }
+
+    #[test]
+    fn test_string_to_number_invalid_binary_digit() {
+        // '2' is not a valid binary digit
+        let result = string_to_number("2", 2, 32);
+        assert!(result.is_err(), "Invalid binary digit should produce an error");
+    }
+
+    #[test]
+    fn test_string_to_number_very_long() {
+        // A very long number (1000 digits of '1')
+        let long_num = "1".repeat(1000);
+        let result = string_to_number(&long_num, 10, 32);
+        assert!(result.is_ok(), "Long numeric string should parse");
+    }
+
+    #[test]
+    fn test_string_to_number_large_hex() {
+        // Maximum u32 in hex: FFFFFFFF
+        let result = string_to_number("FFFFFFFF", 16, 32);
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_string_to_number_exponent_notation() {
+        // Number with exponent: "1e5" in base 10
+        let n = string_to_number("1e5", 10, 32).unwrap();
+        assert!(!n.is_zero());
+    }
+
+    #[test]
+    fn test_string_to_number_negative_exponent() {
+        // "5e-3" should parse
+        let n = string_to_number("5e-3", 10, 32).unwrap();
+        assert!(!n.is_zero());
+    }
+
+    #[test]
+    fn test_string_to_number_multiple_leading_zeros() {
+        let n = string_to_number("0000000", 10, 32).unwrap();
+        assert!(n.is_zero() || n.to_i32(10) == Some(0));
+    }
+
+    // --- string_to_rat boundary cases ---
+
+    #[test]
+    fn test_string_to_rat_empty_mantissa_empty_exponent() {
+        // Both empty → should be zero
+        let r = string_to_rat(false, "", false, "", 10, 32).unwrap();
+        assert!(r.is_zero());
+    }
+
+    #[test]
+    fn test_string_to_rat_empty_mantissa_with_exponent() {
+        // Empty mantissa but exponent given → should be 1 * radix^exp
+        let r = string_to_rat(false, "", false, "3", 10, 32).unwrap();
+        assert!(!r.is_zero());
+    }
+
+    #[test]
+    fn test_string_to_rat_negative_exponent() {
+        // "5" with exponent -3 → 5 * 10^-3 = 0.005
+        let r = string_to_rat(false, "5", true, "3", 10, 32).unwrap();
+        assert!(!r.is_zero());
+        assert_eq!(r.sign(), 1);
+    }
+
+    #[test]
+    fn test_string_to_rat_negative_mantissa_negative_exponent() {
+        // -5 * 10^-2 = -0.05
+        let r = string_to_rat(true, "5", true, "2", 10, 32).unwrap();
+        assert_eq!(r.sign(), -1);
+    }
+
+    #[test]
+    fn test_string_to_rat_large_exponent() {
+        // 1e100 — should produce a very large number
+        let r = string_to_rat(false, "1", false, "100", 10, 32).unwrap();
+        assert!(!r.is_zero());
+        assert_eq!(r.sign(), 1);
+    }
+
+    #[test]
+    fn test_string_to_rat_hex_digits() {
+        // Parse "FF" as hex → 255
+        let r = string_to_rat(false, "FF", false, "0", 16, 32).unwrap();
+        assert!(!r.is_zero());
+    }
+
+    #[test]
+    fn test_string_to_rat_binary() {
+        // Parse "11111111" as binary → 255
+        let r = string_to_rat(false, "11111111", false, "0", 2, 32).unwrap();
+        assert!(!r.is_zero());
+    }
+
+    // --- rat_to_string boundary cases ---
+
+    #[test]
+    fn test_rat_to_string_one() {
+        let r = Rational::one();
+        let s = rat_to_string(&r, NumberFormat::Float, 10, 32).unwrap();
+        assert_eq!(s, "1");
+    }
+
+    #[test]
+    fn test_rat_to_string_negative_one() {
+        let r = Rational::from_i32(-1);
+        let s = rat_to_string(&r, NumberFormat::Float, 10, 32).unwrap();
+        assert_eq!(s, "-1");
+    }
+
+    #[test]
+    fn test_rat_to_string_large_integer() {
+        let r = Rational::from_u64(1_000_000_000);
+        let s = rat_to_string(&r, NumberFormat::Float, 10, 32).unwrap();
+        assert_eq!(s, "1000000000");
+    }
+
+    #[test]
+    fn test_rat_to_string_fraction() {
+        // 1/3 should produce a decimal with many digits
+        let r = Rational::new(
+            Number::from_i32(1, BASEX),
+            Number::from_i32(3, BASEX),
+        );
+        let s = rat_to_string(&r, NumberFormat::Float, 10, 16).unwrap();
+        assert!(s.contains('.'), "1/3 should have a decimal point");
+        assert!(s.starts_with("0.3333"), "1/3 should start with 0.3333");
+    }
+
+    #[test]
+    fn test_rat_to_string_scientific_format() {
+        let r = Rational::from_u64(1_000_000);
+        let s = rat_to_string(&r, NumberFormat::Scientific, 10, 16).unwrap();
+        assert!(s.contains('e') || s.contains('E') || s.contains("1000000"),
+            "Scientific format should use exponent notation or plain: got '{s}'");
+    }
+
+    #[test]
+    fn test_rat_to_string_hex_output() {
+        let r = Rational::from_u64(255);
+        let s = rat_to_string(&r, NumberFormat::Float, 16, 32).unwrap();
+        assert_eq!(s.to_uppercase(), "FF");
+    }
+
+    #[test]
+    fn test_rat_to_string_binary_output() {
+        let r = Rational::from_u64(10);
+        let s = rat_to_string(&r, NumberFormat::Float, 2, 32).unwrap();
+        assert_eq!(s, "1010");
+    }
+
+    #[test]
+    fn test_rat_to_string_octal_output() {
+        let r = Rational::from_u64(255);
+        let s = rat_to_string(&r, NumberFormat::Float, 8, 32).unwrap();
+        assert_eq!(s, "377");
+    }
+
+    // --- roundtrip stress tests ---
+
+    #[test]
+    fn test_roundtrip_large_number() {
+        let n = string_to_number("999999999", 10, 32).unwrap();
+        let s = number_to_string(&n, NumberFormat::Float, 10, 32).unwrap();
+        assert_eq!(s, "999999999");
+    }
+
+    #[test]
+    fn test_roundtrip_negative() {
+        let n = string_to_number("-123", 10, 32).unwrap();
+        let s = number_to_string(&n, NumberFormat::Float, 10, 32).unwrap();
+        assert_eq!(s, "-123");
+    }
+
+    #[test]
+    fn test_roundtrip_binary() {
+        let n = string_to_number("11111111", 2, 32).unwrap();
+        let s = number_to_string(&n, NumberFormat::Float, 2, 32).unwrap();
+        assert_eq!(s, "11111111");
+    }
 }

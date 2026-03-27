@@ -315,4 +315,147 @@ mod tests {
         let a = r.abs();
         assert_eq!(a.sign(), 1);
     }
+
+    // =========================================================================
+    // Boundary and edge-case tests
+    // =========================================================================
+
+    #[test]
+    fn test_from_u64_max() {
+        let r = Rational::from_u64(u64::MAX);
+        assert!(!r.is_zero());
+        assert_eq!(r.sign(), 1);
+    }
+
+    #[test]
+    fn test_from_u64_zero() {
+        let r = Rational::from_u64(0);
+        assert!(r.is_zero());
+    }
+
+    #[test]
+    fn test_from_u64_one() {
+        let r = Rational::from_u64(1);
+        assert!(!r.is_zero());
+        assert_eq!(r.sign(), 1);
+    }
+
+    #[test]
+    fn test_from_u64_powers_of_two() {
+        for power in [1u64, 2, 4, 8, 256, 65536, 1 << 31, 1 << 32, 1 << 63] {
+            let r = Rational::from_u64(power);
+            assert!(!r.is_zero(), "2^{} should not be zero", power.trailing_zeros());
+        }
+    }
+
+    #[test]
+    fn test_to_u64_simple() {
+        let r = Rational::from_i32(42);
+        let val = r.to_u64(10, 32).unwrap();
+        assert_eq!(val, 42);
+    }
+
+    #[test]
+    fn test_to_u64_zero() {
+        let r = Rational::zero();
+        let val = r.to_u64(10, 32).unwrap();
+        assert_eq!(val, 0);
+    }
+
+    #[test]
+    fn test_to_u64_fraction_fails() {
+        // 1/3 cannot be converted to u64 — non-integer
+        let r = Rational::new(
+            Number::from_i32(1, BASEX),
+            Number::from_i32(3, BASEX),
+        );
+        assert!(r.to_u64(10, 32).is_err());
+    }
+
+    #[test]
+    fn test_negate_zero() {
+        let r = Rational::zero();
+        let neg = r.negate();
+        // Negating zero should still be zero
+        assert!(neg.is_zero());
+    }
+
+    #[test]
+    fn test_abs_zero() {
+        let r = Rational::zero();
+        let a = r.abs();
+        assert!(a.is_zero());
+    }
+
+    #[test]
+    fn test_abs_already_positive() {
+        let r = Rational::from_i32(42);
+        let a = r.abs();
+        assert_eq!(a.sign(), 1);
+    }
+
+    #[test]
+    fn test_double_negate_roundtrip() {
+        let r = Rational::from_i32(42);
+        let double_neg = r.negate().negate();
+        assert_eq!(double_neg.sign(), r.sign());
+    }
+
+    #[test]
+    fn test_dup_independence() {
+        let r = Rational::from_i32(5);
+        let mut d = r.dup();
+        d.negate_mut();
+        // Original should be unaffected
+        assert_eq!(r.sign(), 1);
+        assert_eq!(d.sign(), -1);
+    }
+
+    #[test]
+    fn test_renormalize_already_normalized() {
+        let mut r = Rational::from_i32(5);
+        let p_exp_before = r.p().exp;
+        let q_exp_before = r.q().exp;
+        r.renormalize();
+        assert_eq!(r.p().exp, p_exp_before);
+        assert_eq!(r.q().exp, q_exp_before);
+    }
+
+    #[test]
+    fn test_log2_estimate_one() {
+        let r = Rational::one();
+        // log2(1) ≈ 0
+        let est = r.log2_estimate();
+        assert_eq!(est, 0, "log2 estimate of 1 should be 0");
+    }
+
+    #[test]
+    fn test_default_is_zero() {
+        let r = Rational::default();
+        assert!(r.is_zero());
+    }
+
+    #[test]
+    fn test_from_number() {
+        let n = Number::from_i32(7, BASEX);
+        let r = Rational::from(n);
+        assert!(!r.is_zero());
+        assert_eq!(r.sign(), 1);
+    }
+
+    #[test]
+    fn test_neg_trait() {
+        let r = Rational::from_i32(5);
+        let neg = -r;
+        assert_eq!(neg.sign(), -1);
+    }
+
+    #[test]
+    fn test_neg_trait_ref() {
+        let r = Rational::from_i32(5);
+        let neg = -&r;
+        assert_eq!(neg.sign(), -1);
+        // Original unchanged
+        assert_eq!(r.sign(), 1);
+    }
 }
