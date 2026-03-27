@@ -9,7 +9,7 @@ use crate::types::{BASEX, BASEX_PWR};
 
 use super::arithmetic::{
     add_num, add_rat, div_num_x, div_rat, mul_num_x, mul_rat, rat_equ, rat_gt, rat_le, rat_lt,
-    rat_pow_i32, sub_rat,
+    sub_rat,
 };
 use super::constants::RatpackConstants;
 use super::support::{frac_rat, int_rat, snap_rat, trim_rat};
@@ -313,6 +313,59 @@ pub(crate) fn _log_rat_bootstrap(
 }
 
 // ---------------------------------------------------------------------------
+// pow_rat_i32_trimmed — precision-trimmed binary exponentiation
+//
+// Like `rat_pow_i32` but trims the mantissa to `precision` significant digits
+// after each squaring/multiply step.  This keeps the mantissa size O(precision)
+// instead of growing exponentially with the exponent, allowing e^N for large N
+// without hanging or running out of memory.
+// ---------------------------------------------------------------------------
+
+/// Compute base^power using binary exponentiation with precision trimming.
+///
+/// This prevents mantissa explosion for large exponents (e.g. e^4800) while
+/// preserving `precision` significant digits in the result.
+fn pow_rat_i32_trimmed(
+    base: &Rational,
+    power: i32,
+    precision: i32,
+    ratio: i32,
+    true_infinite: bool,
+) -> CalcResult<Rational> {
+    if power == 0 {
+        return Ok(Rational::one());
+    }
+
+    let (base, abs_power) = if power < 0 {
+        if base.is_zero() {
+            return Err(CalcError::DivideByZero);
+        }
+        let inverted = Rational::new(base.q().clone(), base.p().clone());
+        (inverted, (power as i64).unsigned_abs() as u32)
+    } else {
+        (base.clone(), power as u32)
+    };
+
+    let mut result = Rational::one();
+    let mut current = base;
+    let mut p = abs_power;
+
+    while p > 0 {
+        if p & 1 != 0 {
+            result = mul_rat(&result, &current, precision);
+            trimit(&mut result, precision, ratio, true_infinite);
+        }
+        p >>= 1;
+        if p > 0 {
+            current = mul_rat(&current, &current, precision);
+            trimit(&mut current, precision, ratio, true_infinite);
+        }
+    }
+
+    Ok(result)
+}
+
+// ---------------------------------------------------------------------------
 // exprat — public e^x with domain checking and integer/fractional splitting
 // ---------------------------------------------------------------------------
 
@@ -341,8 +394,8 @@ pub fn exp_rat(
     // intpwr = pint as i32 (matching C++ rattoi32)
     let intpwr = rat_to_i32(&pint, radix, precision)?;
 
-    // pwr = e^intpwr
-    pwr = rat_pow_i32(&pwr, intpwr, precision)?;
+    // pwr = e^intpwr — use trimmed exponentiation to keep mantissa bounded
+    pwr = pow_rat_i32_trimmed(&pwr, intpwr, precision, constants.ratio, constants.true_infinite)?;
 
     // x = x - pint (fractional part)
     *x = sub_rat(x, &pint, precision);
@@ -622,7 +675,7 @@ fn pow_rat_comp(
                     return Err(CalcError::Domain);
                 }
 
-                *x = rat_pow_i32(x, inty, precision)?;
+                *x = pow_rat_i32_trimmed(x, inty, precision, constants.ratio, constants.true_infinite)?;
                 if (inty & 1) == 0 {
                     sign = 1;
                 }
@@ -1344,5 +1397,43 @@ mod tests {
             (val - 49.0).abs() < 0.01,
             "7^2 should be 49, got {val}"
         );
+    }
+
+    #[test]
+    fn test_pow_large_exponent_no_overflow() {
+        // 2.3335656^5667.225654489 previously failed with Overflow.
+        // The result is ~10^2085 — should succeed with trimmed exponentiation.
+        use crate::ratpack::conv::string_to_rat;
+        let c = RatpackConstants::new(10, 32);
+        // 2.3335656 = 23335656 * 10^(-7)
+        let mut base = string_to_rat(false, "23335656", true, "7", 10, 32).unwrap();
+        // 5667.225654489 = 5667225654489 * 10^(-9)
+        let exp = string_to_rat(false, "5667225654489", true, "9", 10, 32).unwrap();
+        let result = pow_rat(&mut base, &exp, 10, 32, &c);
+        assert!(result.is_ok(), "Large exponent pow should not overflow: {result:?}");
+        assert!(!base.is_zero(), "Result should not be zero");
+        assert_eq!(base.sign(), 1, "Result should be positive");
+    }
+
+    #[test]
+    fn test_exp_large_positive() {
+        // e^4800 should succeed (result ≈ 10^2085)
+        let c = make_constants();
+        let mut x = Rational::from_i32(4800);
+        let result = exp_rat(&mut x, 10, 128, &c);
+        assert!(result.is_ok(), "exp(4800) should succeed: {result:?}");
+        assert!(!x.is_zero());
+        assert_eq!(x.sign(), 1);
+    }
+
+    #[test]
+    fn test_pow_integer_large_exponent() {
+        // 2^5000 should succeed (result ≈ 10^1505)
+        let c = RatpackConstants::new(10, 32);
+        let mut base = Rational::from_i32(2);
+        let exp = Rational::from_i32(5000);
+        let result = pow_rat(&mut base, &exp, 10, 32, &c);
+        assert!(result.is_ok(), "2^5000 should not overflow: {result:?}");
+        assert!(!base.is_zero());
     }
 }
