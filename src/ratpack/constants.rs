@@ -6,7 +6,7 @@
 
 use crate::types::{BASEX, BASEX_PWR};
 
-use super::arithmetic::{rat_pow_i32, sub_rat, mul_rat, div_rat, add_rat};
+use super::arithmetic::{rat_pow_i32, sub_rat, mul_rat, div_rat};
 use super::Number;
 use super::Rational;
 

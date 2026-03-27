@@ -8,18 +8,19 @@
 use crate::commands::Command;
 use crate::display::CalcDisplay;
 use crate::engine::calc_engine::CalcEngine;
-use crate::engine::resource_provider::ResourceProvider;
 use crate::ratpack::Rational;
 use crate::types::*;
 
 use super::calculator_history::{CalculatorHistory, HistoryItem};
 
+#[allow(dead_code)]
 const MAXIMUM_MEMORY_SIZE: usize = 100;
 
 /// High-level calculator manager.
 ///
 /// Manages engine lifecycle, mode switching, memory, and history.
 /// Port of C++ `CalculationManager::CalculatorManager`.
+#[allow(dead_code)]
 pub struct CalculatorManager {
     current_mode: CalculatorMode,
     standard_engine: CalcEngine,

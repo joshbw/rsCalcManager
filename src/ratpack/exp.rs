@@ -806,7 +806,6 @@ pub fn root_rat(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::ratpack::arithmetic::rat_neq;
 
     /// Helper: create constants for base-10, precision 128.
     fn make_constants() -> RatpackConstants {

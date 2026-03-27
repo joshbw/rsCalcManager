@@ -13,6 +13,7 @@ use crate::commands::UnitConversionCommand;
 /// Unit converter engine.
 ///
 /// Manages unit conversion between different categories and unit types.
+#[allow(dead_code)]
 pub struct UnitConverter {
     data_loader: Box<dyn ConverterDataLoader>,
     callback: Option<Box<dyn UnitConverterCallback>>,

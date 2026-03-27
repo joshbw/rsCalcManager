@@ -95,6 +95,7 @@ impl ExpressionCommand for BinaryCmd {
 
 /// Operand command (digit sequence).
 #[derive(Debug, Clone)]
+#[allow(dead_code)]
 pub struct OperandCmd {
     commands: Vec<i32>,
     negative: bool,

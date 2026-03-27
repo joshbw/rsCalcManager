@@ -8,11 +8,12 @@
 use std::fmt;
 
 use crate::error::{CalcError, CalcResult};
-use crate::types::{NumberFormat, BASEX};
+use crate::types::BASEX;
 
 use super::Number;
 
 /// Default base/radix for rational calculations.
+#[allow(dead_code)]
 pub const RATIONAL_BASE: u32 = 10;
 
 /// Default precision for rational calculations.
@@ -180,7 +181,7 @@ impl Rational {
     }
 
     /// Try to convert to u64.
-    pub fn to_u64(&self, radix: u32, precision: i32) -> CalcResult<u64> {
+    pub fn to_u64(&self, _radix: u32, _precision: i32) -> CalcResult<u64> {
         // TODO: implement full conversion via ratpack conv
         // For now, simple case where q == 1
         if self.q.mantissa == vec![1] && self.q.exp == 0 {

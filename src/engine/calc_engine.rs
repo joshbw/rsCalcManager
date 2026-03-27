@@ -6,19 +6,18 @@
 //! Port of C++ CCalcEngine class from CalcEngine.h and related .cpp files.
 
 use crate::commands::OpCode;
-use crate::display::{CalcDisplay, HistoryDisplay};
-use crate::error::CalcResult;
+use crate::display::CalcDisplay;
 use crate::ratpack::Rational;
 use crate::types::*;
 
 use super::calc_input::CalcInput;
 use super::history::HistoryCollector;
-use super::resource_provider::ResourceProvider;
 
 /// The calculator engine state machine.
 ///
 /// Processes commands and produces display output via the `CalcDisplay` trait.
 /// Port of C++ `CCalcEngine` class.
+#[allow(dead_code)]
 pub struct CalcEngine {
     // Mode configuration
     precedence: bool,
@@ -121,7 +120,7 @@ impl CalcEngine {
 
     /// Process a command (button press).
     /// Port of C++ `CCalcEngine::ProcessCommand`.
-    pub fn process_command(&mut self, op: OpCode, display: &mut dyn CalcDisplay) {
+    pub fn process_command(&mut self, _op: OpCode, _display: &mut dyn CalcDisplay) {
         // TODO: Port full command processing from scicomm.cpp
     }
 

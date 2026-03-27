@@ -450,6 +450,7 @@ fn _div_num_x(a: &Number, b: &Number, precision: i32) -> Number {
 
     while cdigits < thismax && !zer_num(&rem) {
         cdigits += 1;
+        #[allow(unused_assignments)]
         let mut digit: u32 = 0;
         c_mant[ptrc] = 0;
 
@@ -738,7 +739,7 @@ pub fn rem_rat(a: &Rational, b: &Rational) -> CalcResult<Rational> {
 
 /// Raise rational to an i32 power.
 /// Port of C++ `ratpowi32`.
-pub fn rat_pow_i32(base: &Rational, power: i32, precision: i32) -> CalcResult<Rational> {
+pub fn rat_pow_i32(base: &Rational, power: i32, _precision: i32) -> CalcResult<Rational> {
     if power == 0 {
         return Ok(Rational::one());
     }

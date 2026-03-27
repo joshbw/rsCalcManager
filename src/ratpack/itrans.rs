@@ -54,6 +54,7 @@ fn add_rat_t(
 }
 
 #[inline]
+#[allow(dead_code)]
 fn div_rat_t(
     a: &Rational,
     b: &Rational,
@@ -208,7 +209,7 @@ pub fn asin_rat(
         // |x| > 0.85: use alternate form
         if rat_gt(x, &constants.rat_one, precision) {
             // |x| > 1: check if just epsilon above
-            let mut diff = sub_rat(x, &constants.rat_one, precision);
+            let diff = sub_rat(x, &constants.rat_one, precision);
             if rat_gt(&diff, &constants.rat_smallest, precision) {
                 return Err(CalcError::Domain);
             }

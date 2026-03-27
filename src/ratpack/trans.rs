@@ -52,6 +52,7 @@ fn add_rat_t(
 }
 
 #[inline]
+#[allow(dead_code)]
 fn div_rat_t(
     a: &Rational,
     b: &Rational,
