@@ -3,17 +3,11 @@
 ## Project Overview
 
 This is a Rust port of Microsoft's Windows Calculator `CalcManager` C++ library.
-The original source is in `code2port/src/CalcManager/`.
 
 ## Directory Structure
 
 ```
 rsCalcManager/
-├── code2port/                  # Git submodule of microsoft/calculator
-│   └── src/CalcManager/        # Original C++ source
-│       ├── CEngine/            # Calculator engine implementation
-│       ├── Header Files/       # Public headers
-│       └── Ratpack/            # Arbitrary precision arithmetic
 ├── src/                        # Rust crate source
 │   ├── lib.rs                  # Crate root, public API re-exports
 │   ├── error.rs                # CalcError enum
@@ -32,8 +26,8 @@ rsCalcManager/
 │   │   ├── logic.rs            # Bitwise operations
 │   │   ├── num.rs              # Number utilities (GCD, etc.)
 │   │   ├── support.rs          # Support functions (trim, scale, snap)
-│   │   ├── trans.rs            # Trigonometric functions
-│   │   └── itrans.rs           # Inverse trigonometric functions
+│   │   ├── trans.rs            # Trigonometric + hyperbolic functions
+│   │   └── itrans.rs           # Inverse trig + inverse hyperbolic functions
 │   ├── engine/                 # Calculator engine
 │   │   ├── calc_engine.rs      # Main engine (CCalcEngine port)
 │   │   ├── calc_input.rs       # Input handling (CalcInput port)
@@ -46,13 +40,14 @@ rsCalcManager/
 │   └── unit_converter/         # Unit conversion
 │       ├── types.rs            # Unit, Category, ConversionData
 │       └── converter.rs        # UnitConverter implementation
-├── test/                       # Test harnesses
-│   ├── port_harness/           # Tests for original C++ code
-│   ├── project_harness/        # Tests for Rust port
-│   └── test_cases/             # Shared test cases
+├── tests/                      # Integration tests
+│   └── ratpack_integration.rs  # JSON-driven test harness (213 test cases)
+├── test/
+│   └── test_cases/             # JSON test case files
 ├── Cargo.toml
 └── .github/
-    └── copilot-instructions.md # This file
+    ├── copilot-instructions.md # This file
+    └── workflows/ci.yml        # CI workflow (Windows, macOS, Linux, iOS, Android)
 ```
 
 ## Build Commands
@@ -75,13 +70,21 @@ cargo doc --open         # Generate and view documentation
 ## Porting Status
 
 - ✅ Types, enums, commands, error codes
-- ✅ Basic Number and Rational types
-- ✅ Basic arithmetic (add, sub, mul, div for rationals)
-- 🔧 Ratpack advanced functions (trig, exp, log, conv) — stubs
+- ✅ Number and Rational types
+- ✅ Arithmetic (add, sub, mul, div, rem, pow)
+- ✅ Ratpack: exp, log, log10, pow, root
+- ✅ Ratpack: factorial (gamma function)
+- ✅ Ratpack: trig (sin, cos, tan + angle variants)
+- ✅ Ratpack: hyperbolic (sinh, cosh, tanh)
+- ✅ Ratpack: inverse trig (asin, acos, atan + angle variants)
+- ✅ Ratpack: inverse hyperbolic (asinh, acosh, atanh)
+- ✅ Ratpack: logic (and, or, xor, lsh, rsh, mod)
+- ✅ Ratpack: conversion (string ↔ number, base conversion)
+- ✅ Ratpack: support (trim, scale, int, frac, gcd, snap)
+- ✅ UnitConverter basic structure
+- ✅ CalcInput
 - 🔧 CalcEngine command processing — stub
 - 🔧 CalculatorManager — stub
-- ✅ UnitConverter basic structure
-- 🔧 CalcInput — implemented
 - 🔧 History — stub
 
 ## C++ → Rust Mapping
